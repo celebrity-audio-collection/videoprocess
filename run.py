@@ -109,7 +109,8 @@ if __name__ == '__main__':
 
     serieid = 0
     shotcount = 0
-
+    for i in range(570):
+        cap.read()
     while True:
         tS = time.time()
         ret, raw_image = cap.read()
@@ -147,8 +148,12 @@ if __name__ == '__main__':
             else:
                 newtrackerlist.append(tracker)
         trackerlist = newtrackerlist
-
+        # print(selection)
         for boundary in selection:
+            for i in range(len(boundary)):
+                boundary[i] = int(boundary[i])
+            # print(type(boundary[0]))
+            # print(boundary[0])
             if(boundary[0] < 0  or boundary[2]>raw_image.shape[1] or boundary[1] <0 or boundary[3]>raw_image.shape[0]):
                 continue
 
@@ -156,8 +161,9 @@ if __name__ == '__main__':
             center = [int((boundary[1]+boundary[3])/2),int((boundary[0]+boundary[2])/2)]
 
             facepicture = img_split[max(center[0]-length,0):center[0]+length, max(center[1]-length,0):center[1]+length, :]
+            tt = time.time()
             validation = facenet_model.Confirm_validity(facepicture)
-
+            print("face validation cost:",  time.time() - tt)
             ## landmark prediction
             pre_b = dlib.rectangle(int(boundary[0]), int(boundary[1]), int(boundary[2]), int(boundary[3]))
             shape = predictor(raw_image, pre_b)
@@ -249,10 +255,10 @@ if __name__ == '__main__':
     preset = []
     valset = []
     for pair in canditates:
-        preset += [i for i in range(int(pair[0]), int(pair[1]))]
+        preset += [i for i in range(pair[0], pair[1])]
 
     for pair in truelable:
-        valset += [i for i in range(int(pair[0]), int(pair[1]))]
+        valset += [i for i in range(pair[0], pair[1])]
 
 
     preset = set(preset)
