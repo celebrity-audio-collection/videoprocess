@@ -23,7 +23,7 @@ import tensorflow as tf
 from scipy.io import wavfile
 import pandas as  pd
 import time
-8
+
 import keras.backend.tensorflow_backend as KTF
 
 gpuconfig = tf.ConfigProto()
