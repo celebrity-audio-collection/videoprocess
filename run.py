@@ -249,10 +249,10 @@ if __name__ == '__main__':
     preset = []
     valset = []
     for pair in canditates:
-        preset += [i for i in range(pair[0], pair[1])]
+        preset += [i for i in range(int(pair[0]), int(pair[1]))]
 
     for pair in truelable:
-        valset += [i for i in range(pair[0], pair[1])]
+        valset += [i for i in range(int(pair[0]), int(pair[1]))]
 
 
     preset = set(preset)
