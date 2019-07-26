@@ -6,23 +6,58 @@ from scipy import misc
 import numpy as np
 import os
 from common import config
+import argparse
+from RetinaFaceModel.insightface.deploy.face_model import FaceModel
+from RetinaFaceModel.insightface.src.common.face_preprocess import preprocess
+import cv2
+
+
 class FaceValidation:
 
 
     def __init__(self, model_path = config.face_validation_path):
 
+        if config.use_insightface:
+            parser = argparse.ArgumentParser(description='face model test')
+            # general
+            parser.add_argument('--image-size', default='112,112', help='')
+            parser.add_argument('--model', default=config.mobilenet_dir, help='path to load model.')
+            parser.add_argument('--ga-model', default='', help='path to load model.')
+            parser.add_argument('--gpu', default=0, type=int, help='gpu id')
+            parser.add_argument('--det', default=0, type=int,
+                                help='mtcnn option, 1 means using R+O, 0 means detect from begining')
+            parser.add_argument('--flip', default=0, type=int, help='whether do lr flip aug')
+            parser.add_argument('--threshold', default=1.24, type=float, help='ver dist threshold')
+            args = parser.parse_args()
+
+            self.valmodel = FaceModel(args)
+
+
+        elif config.use_fecenet:
+            self.graph = tf.Graph()
+            self.sess = tf.Session(graph=self.graph)
+            with self.sess.as_default():
+                with self.graph.as_default():
+                    # Load the model
+                    facenet.load_model(model_path)
+
         self.image_list = []
-        g_facenet = tf.Graph()
-        sess_fecnet = tf.Session(graph=g_facenet)
-        with sess_fecnet.as_default():
-            with g_facenet.as_default():
-                # Load the model
-                facenet.load_model(model_path)
-        self.graph = g_facenet
-        self.sess = sess_fecnet
+        self.labelembds= []
 
     def update_POI(self,imgdir_list):
-        self.image_list = self.load_and_align_data(imgdir_list, config.validation_imagesize, config.margin)
+        if config.use_insightface:
+            tmp_image_paths = copy.copy(imgdir_list)
+            features = []
+            for image in tmp_image_paths:
+                img = misc.imread(os.path.expanduser(image), mode='RGB')
+                img1 = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+                img1 = self.valmodel.get_input(img1)
+                features.append(self.valmodel.get_feature(img1).reshape(1,-1))
+            self.labelembds += features
+            print(self.labelembds)
+        elif config.use_fecenet:
+            self.image_list = self.load_and_align_data(imgdir_list, config.validation_imagesize, config.margin)
+            self.labelembds = self.compute_embedings(self.image_list)
 
     def load_and_align_data(self, image_paths, image_size, margin):
         minsize = 20  # minimum size of face
@@ -48,6 +83,7 @@ class FaceValidation:
                 image_paths.remove(image)
                 print("can't detect face, remove ", image)
                 continue
+
             det = np.squeeze(bounding_boxes[0, 0:4])
             bb = np.zeros(4, dtype=np.int32)
             bb[0] = np.maximum(det[0] - margin / 2, 0)
@@ -68,12 +104,8 @@ class FaceValidation:
         prewhitened = facenet.prewhiten(aligned)
         return prewhitened
 
-    def Confirm_validity(self, img_in):
-        processed_facepicture = self.process_cutted_image(img_in)
-        image_dict = self.image_list.copy()
-        image_dict.append(processed_facepicture)
-        image_dict = np.stack(image_dict)
-
+    def compute_embedings(self, img_processed_picture):
+        image_dict = np.stack(img_processed_picture)
         with self.graph.as_default():
             with self.sess.graph.as_default():
                 images_placeholder = tf.get_default_graph().get_tensor_by_name("input:0")
@@ -81,20 +113,56 @@ class FaceValidation:
                 phase_train_placeholder = tf.get_default_graph().get_tensor_by_name("phase_train:0")
                 # Run forward pass to calculate embeddings
                 feed_dict = {images_placeholder: image_dict, phase_train_placeholder: False}
-                emb = self.sess.run(embeddings, feed_dict=feed_dict)
+                embd = self.sess.run(embeddings, feed_dict=feed_dict)
 
-                avg = 0
-                #此处更新计算合法性算法
-                for i in range(len(emb)-1):
-                    dist = np.sqrt(np.sum(np.square(np.subtract(emb[i, :], emb[-1, :]))))
-                    # print("face validation：",dist)
-                    avg += dist
-                value = avg/(len(emb)-1)
+        return embd
 
-        if value < config.threshold:
-            return True
-        else:
-            return False
+    def findCosineDistance(self, vector1, vector2):
+        """
+        Calculate cosine distance between two vector
+        """
+        vec1 = vector1.flatten()
+        vec2 = vector2.flatten()
+
+        a = np.dot(vec1.T, vec2)
+        b = np.dot(vec1.T, vec1)
+        c = np.dot(vec2.T, vec2)
+        return 1 - (a / (np.sqrt(b) * np.sqrt(c)))
+
+    def Confirm_validity(self, img_in):
+        if config.use_insightface:
+            nimg = preprocess(img_in, image_size='112,112')
+            nimg = cv2.cvtColor(nimg, cv2.COLOR_BGR2RGB)
+            nimg = np.transpose(nimg, (2, 0, 1))
+            embedding = self.valmodel.get_feature(nimg).reshape(1, -1)
+            avg = 0
+            for i in range(len(self.labelembds)):
+                # cosdist = np.sqrt(np.sum(np.square(np.subtract(self.labelembds[i, :], picembd[0, :]))))
+                cosdist = self.findCosineDistance(self.labelembds[i],embedding)
+                # print("face validation：",dist)
+                avg += cosdist
+            value = avg / (len(self.labelembds))
+            print("average cos distance: ", value)
+            if value < config.cosine_threshold:
+                return True
+            else:
+                return False
+        elif config.use_fecenet:
+            processed_facepicture = self.process_cutted_image(img_in)
+            picembd = self.compute_embedings([processed_facepicture])
+
+            avg = 0
+            # 此处更新计算合法性算法
+            for i in range(len(self.labelembds)):
+                dist = np.sqrt(np.sum(np.square(np.subtract(self.labelembds[i, :], picembd[0, :]))))
+                # print("face validation：",dist)
+                avg += dist
+            value = avg / (len(self.labelembds))
+
+            if value < config.threshold:
+                return True
+            else:
+                return False
 
 
 
