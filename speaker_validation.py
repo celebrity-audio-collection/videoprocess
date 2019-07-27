@@ -1,7 +1,6 @@
 from common import config
 from syncnet import SyncNetInstance
 import numpy as np
-import cv2
 
 
 class SpeakerValidation:
@@ -15,24 +14,23 @@ class SpeakerValidation:
             return None, np.array([0]), None
         offset, confidence, dists_npy = self.model.evaluate_part(video_fps, imageseq, audioseq)
         # if len(imageseq) != len (confidence):
-        #     print("WOW")
         #     print(len(imageseq),len (confidence))
         #     exit(10)
         return offset, confidence, dists_npy
 
-    def verification(self, confidence, startshot, logfile):
+    def verification(self, confidence, start_shot, logfile):
         # print(confidence)
-        canditates = []
+        candidates = []
         processed = -1
         for index in range(0, confidence.shape[0]):
             if index <= processed:
                 continue
             if confidence[index] >= config.starting_confidence:
-                stshot = startshot + index
-                while (index < confidence.shape[0] and confidence[index] >= config.patient_confidence):
+                start_shot = start_shot + index
+                while index < confidence.shape[0] and confidence[index] >= config.patient_confidence:
                     index += 1
                 processed = index
-                edshot = startshot + index + 6
-                canditates.append((stshot, edshot))
-                logfile.writelines([str(stshot) + ":" + str(edshot) + "\n"])
-        return canditates
+                end_shot = start_shot + index + 6
+                candidates.append((start_shot, end_shot))
+                logfile.writelines([str(start_shot) + ":" + str(end_shot) + "\n"])
+        return candidates

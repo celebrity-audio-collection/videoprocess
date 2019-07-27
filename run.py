@@ -8,107 +8,70 @@ from my_tracker import MyTracker
 from face_detection import FaceDetection
 from face_validation import FaceValidation
 from speaker_validation import SpeakerValidation
+from evaluate import evaluate_result
 
-import os
 import cv2
-import dlib
-import sys
 import subprocess
 import numpy as np
 from scipy.io import wavfile
-import pandas as pd
 import time
 
 if config.use_facenet:
     import tensorflow as tf
     import keras.backend.tensorflow_backend as KTF
-
     gpuconfig = tf.ConfigProto()
-    gpuconfig.gpu_options.allow_growth = True  # 不全部占满显存, 按需分配
+    gpuconfig.gpu_options.allow_growth = True
     sess = tf.Session(config=gpuconfig)
     KTF.set_session(sess)
 
-# Allow relative imports when being executed as script.
-if __name__ == "__main__" and __package__ is None:
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
-    import keras_retinanet.bin  # noqa: F401
 
-    __package__ = "keras_retinanet.bin"
-
-# Change these to absolute imports if you copy this script outside the keras_retinanet package.
-from keras_retinanet import models
-
-
-def isTracking(boxcenter, trackerlist):
-    for tracker in trackerlist:
-        if tracker.is_tracking(boxcenter) is True:
+def isTracking(box_center, tracker_list):
+    for tracker in tracker_list:
+        if tracker.is_tracking(box_center) is True:
             return True
     return False
-
-
-def processframe(video_fps, stringin):
-    strcrop = stringin.split(":")
-    frame = 0
-    frame += int(strcrop[0]) * video_fps * 60 * 60
-    frame += int(strcrop[1]) * video_fps * 60
-    frame += int(strcrop[2]) * video_fps
-    frame += int(strcrop[3])
-    # frame = int(frame * video_fps/30.0)
-    return frame
 
 
 if __name__ == '__main__':
 
     # load detection model
     print("loading face detection model")
-    face_detection_model = FaceDetection(config.face_detection_model)
-
-    # load landmark predictor
-    # print("loading landmark predictor")
-    # predictor = dlib.shape_predictor(config.landmark_predictor)
+    face_detection_model = FaceDetection()
 
     # load face validation model
     print("loading face validation model")
     facenet_model = FaceValidation()
     facenet_model.update_POI(config.image_files)
 
-    # sync net
+    # SyncNet
     print("loading speaker validation model")
-    speakervalidation = SpeakerValidation()
+    speaker_validation = SpeakerValidation()
 
-    # lip movement
-    # print("loading lip movement detector")
-    # lip_movement_modelpath="D:\\CSLT\\Retinanet_face\\keras-retinanet\\model\\lip_movement_model\\2_64_False_True_0.5_lip_motion_net_model.h5"
-    # lip_movement_model = keras.models.load_model(lip_movement_modelpath)
-    # print("loading lip movement detector finished")
-    # serienames = []
-
-    cap = cv2.VideoCapture(config.video_dir)
-    video_fps = cap.get(cv2.CAP_PROP_FPS)
-    print("video fps ", video_fps)
-    # 获取音轨
-    audiotmp = './temp/audio.wav'
-    command = ("ffmpeg -y -i %s -async 1 -ac 1 -vn -acodec pcm_s16le -ar 16000 %s" % (config.video_dir, audiotmp))
+    # get wave file
+    audio_tmp = './temp/audio.wav'
+    command = ("ffmpeg -y -i %s -async 1 -ac 1 -vn -acodec pcm_s16le -ar 16000 %s" % (config.video_dir, audio_tmp))
     output = subprocess.call(command, shell=True, stdout=None)
-    sample_rate, audio = wavfile.read(audiotmp)
-    print(audio)
+    sample_rate, audio = wavfile.read(audio_tmp)
 
     print("all model loaded")
 
-    # init local variables
+    # result
     predict_results = open("./testans.txt", "w")
 
-    trackerlist = []
-    canditates = []
+    tracker_list = []
+    candidates = []
+    first_shot = True
+    series_id = 0
+    shot_count = 0
 
-    firstshot = True
-
-    serieid = 0
-    shotcount = 0
-    for i in range(570):
+    cap = cv2.VideoCapture(config.video_dir)
+    video_fps = cap.get(cv2.CAP_PROP_FPS)
+    print("Video FPS:", video_fps)
+    for i in range(0):
         cap.read()
+
     while True:
-        tS = time.time()
+        start_time = time.time()
         ret, raw_image = cap.read()
         if ret == False:
             break
@@ -116,86 +79,56 @@ if __name__ == '__main__':
         raw_image = cv2.resize(raw_image, (1280, 720))
         image = raw_image.copy()
         bboxes, landmarks = face_detection_model.update(image)
-        # selection = bboxes.astype(np.int32).tolist()
         img_split = raw_image.copy()
-        newtrackerlist = []
+        new_tracker_list = []
 
-        ## track
-        for tracker in trackerlist:
-            tracked, bbox = tracker.update(img_split, shotcount)
-            # if(tracker.serie_name=="series2"):
-            #     print("series2",len(tracker.syncseq),"  ",shotcount - tracker.startshot,"  ",shotcount )
-            #     print("series2 tracked? ",tracked )
-            # print("tracked? ", tracked)
+        # track
+        for tracker in tracker_list:
+            tracked, bbox = tracker.update(img_split, shot_count)
             if tracked is False:
                 if config.enable_syncnet:
-                    print(16000 * tracker.startshot // video_fps, 16000 * (tracker.endshot) // video_fps)
+                    print(16000 * tracker.start_shot // video_fps, 16000 * (tracker.end_shot) // video_fps)
                     part_audio = audio[
-                                 int(16000 * tracker.startshot // video_fps):int(
-                                     16000 * (tracker.endshot) // video_fps)]
-                    if len(part_audio) != len(tracker.syncseq) * 16000 // video_fps:
+                                 int(16000 * tracker.start_shot // video_fps):int(
+                                     16000 * (tracker.end_shot) // video_fps)]
+                    if len(part_audio) != len(tracker.sync_seq) * 16000 // video_fps:
                         print("fatal: video and audio does not match")
-                        print("startshot", tracker.startshot)
-                        print("endshot", tracker.endshot)
-                        print(tracker.serie_name)
-                        print(len(tracker.syncseq))
+                        print("startshot", tracker.start_shot)
+                        print("endshot", tracker.end_shot)
+                        print(tracker.series_name)
+                        print(len(tracker.sync_seq))
                         print(len(part_audio))
                         # exit(-1)
-                    offset, confidence, dists_npy = speakervalidation.evaluate(video_fps, tracker.syncseq, part_audio)
-                    prelabels = speakervalidation.verification(confidence, tracker.startshot, predict_results)
-                    canditates = canditates + prelabels
+                    offset, confidence, dists_npy = speaker_validation.evaluate(video_fps, tracker.sync_seq, part_audio)
+                    prelabels = speaker_validation.verification(confidence, tracker.start_shot, predict_results)
+                    candidates = candidates + prelabels
             else:
-                newtrackerlist.append(tracker)
-        trackerlist = newtrackerlist
-        # print(selection)
+                new_tracker_list.append(tracker)
+        tracker_list = new_tracker_list
+
         for boundary, landmark in zip(bboxes, landmarks):
             boundary = boundary.astype(np.int)
-            # boundary = list(bbox.astype(np.int))
-            # for i in range(len(boundary)):
-            #     boundary[i] = int(boundary[i])
-            # print(type(boundary[0]))
-            # print(boundary[0])
-            # boundary = boundary.astype(np.int)
-            # if boundary[0] < 0 or boundary[2] > raw_image.shape[1] or \
-            #    boundary[1] < 0 or boundary[3] > raw_image.shape[0]:
-            #     continue
-            #
-            # length = int(max(boundary[3] - boundary[1], boundary[2] - boundary[0]) / 2)
             center = [int((boundary[1] + boundary[3]) / 2), int((boundary[0] + boundary[2]) / 2)]
-            #
-            # facepicture = img_split[max(center[0] - length, 0):center[0] + length,
-            #               max(center[1] - length, 0):center[1] + length, :]
             tt = time.time()
-            validation = facenet_model.Confirm_validity(raw_image, boundary=boundary, landmark=landmark)
-            # print("face_val:", time.time() - tt)
-            # landmark prediction
-            # pre_b = dlib.rectangle(int(boundary[0]), int(boundary[1]), int(boundary[2]), int(boundary[3]))
-            # shape = predictor(raw_image, pre_b)
-            # np_shape = []
-            # for key_point in shape.parts():
-            #     np_shape.append([key_point.x, key_point.y])
-            # np_shape = np.array(np_shape)
+            validation = facenet_model.confirm_validity(raw_image, boundary=boundary, landmark=landmark)
 
             if validation:
-                caption = "yes"
-                tracking = isTracking((center[1], center[0]), trackerlist)
+                caption = "Yes"
+                tracking = isTracking((center[1], center[0]), tracker_list)
                 lipcenter = np.mean(landmark[3:4], axis=0)
-
                 if not tracking:
-                    serieid += 1
-                    # lipcenter = np.mean(np_shape[61:67], axis=0)
-                    newtracker = MyTracker(img_split, boundary, serieid, lipcenter, shotcount)
-                    trackerlist.append(newtracker)
+                    series_id += 1
+                    newtracker = MyTracker(img_split, boundary, series_id, lipcenter, shot_count)
+                    tracker_list.append(newtracker)
                 else:
-                    for tracker in trackerlist:
+                    for tracker in tracker_list:
                         if (tracker.valid is True):
                             continue
                         if tracker.is_valid(center):
                             # build lip picture sequence
-                            # lipcenter = np.mean(np_shape[61:67], axis=0)
                             tracker.update_lip_seq(img_split, boundary, lipcenter)
             else:
-                caption = "no"
+                caption = "No"
             if config.showimg:
                 cv2.rectangle(raw_image, (boundary[0], boundary[1]), (boundary[2], boundary[3]), (0, 255, 0), 2,
                               cv2.LINE_AA)
@@ -203,19 +136,18 @@ if __name__ == '__main__':
                 for point in landmark:
                     pos = (point[0], point[1])
                     cv2.circle(raw_image, pos, 1, (255, 255, 255 / 68 * index_color), -1)
-                    # cv2.putText(raw_image, str(index_color), pos, cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
                     index_color = index_color + 1
                 # lip center
                 lipcenter = np.mean(landmark[3:], axis=0)
                 cv2.circle(raw_image, (lipcenter[0], lipcenter[1]), 1, (0, 0, 0), -1)
-                for tracker in trackerlist:
+                for tracker in tracker_list:
                     if tracker.tracked is True:
                         bbox = tracker.bbox
                         cv2.rectangle(raw_image, (int(bbox[0]), int(bbox[1])),
                                       (int(bbox[2] + bbox[0]), int(bbox[3] + bbox[1])), (255, 0, 0), 2, cv2.LINE_AA)
-                        cv2.putText(raw_image, str(tracker.serie_name), (int(bbox[0]), int(bbox[1]) - 10),
+                        cv2.putText(raw_image, str(tracker.series_name), (int(bbox[0]), int(bbox[1]) - 10),
                                     cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
-                        cv2.putText(raw_image, str(tracker.serie_name), (int(bbox[0]), int(bbox[1]) - 10),
+                        cv2.putText(raw_image, str(tracker.series_name), (int(bbox[0]), int(bbox[1]) - 10),
                                     cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
                     else:
                         print("Warning a invalid tracker was not removed")
@@ -223,70 +155,42 @@ if __name__ == '__main__':
                             (0, 0, 0), 2)
                 cv2.putText(raw_image, str(caption), (boundary[0], boundary[1] - 10), cv2.FONT_HERSHEY_PLAIN, 1,
                             (255, 255, 255), 1)
-            # cv2.putText(raw_image, str(face_series_name), (b[2], b[1] - 10), cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
 
-        newtrackerlist = []
-        for tracker in trackerlist:
+        new_tracker_list = []
+        for tracker in tracker_list:
             if tracker.valid is False:
                 tracker.drop_count += 1
                 tracker.update_lip_seq(img_split, boundary, None)
             if tracker.drop():
-                tracker.set_endshot(shotcount)
+                tracker.set_endshot(shot_count)
                 if config.enable_syncnet:
-                    part_audio = audio[int(16000 // video_fps * tracker.startshot): int(
-                        16000 // video_fps * (tracker.endshot - config.patience + 1))]
-                    if (len(part_audio) != len(tracker.syncseq[:-config.patience]) * 16000 // video_fps):
+                    part_audio = audio[int(16000 // video_fps * tracker.start_shot): int(
+                        16000 // video_fps * (tracker.end_shot - config.patience + 1))]
+                    if len(part_audio) != len(tracker.sync_seq[:-config.patience]) * 16000 // video_fps:
                         print("fatal: video and audio does not match")
-                        print("startshot", tracker.startshot)
-                        print("endshot", tracker.endshot)
-                        print(len(tracker.syncseq))
+                        print("startshot", tracker.start_shot)
+                        print("endshot", tracker.end_shot)
+                        print(len(tracker.sync_seq))
                         print(len(part_audio))
                         # exit(-2)
-                    offset, confidence, dists_npy = speakervalidation.evaluate(video_fps,
-                                                                               tracker.syncseq[:-config.patience],
-                                                                               part_audio)
-                    prelabels = speakervalidation.verification(confidence, tracker.startshot, predict_results)
-                    canditates = canditates + prelabels
+                    offset, confidence, dists_npy = speaker_validation.evaluate(video_fps,
+                                                                                tracker.sync_seq[:-config.patience],
+                                                                                part_audio)
+                    prelabels = speaker_validation.verification(confidence, tracker.start_shot, predict_results)
+                    candidates = candidates + prelabels
 
             else:
-                newtrackerlist.append(tracker)
-        trackerlist = newtrackerlist
-        print('shot {:d}, FPS {:.2f} sec.'.format(shotcount, 1 / (time.time() - tS)), end=' ')
+                new_tracker_list.append(tracker)
+        tracker_list = new_tracker_list
+        print('Shot {:d}, FPS {:.2f} '.format(shot_count, 1 / (time.time() - start_time)), end=' ')
         if config.showimg:
-            cv2.imshow('raw_image', raw_image)
-        shotcount += 1
+            cv2.imshow('Video', raw_image)
+        shot_count += 1
 
-        firstshot = False
+        first_shot = False
         if cv2.waitKey(10) == 27:
             break
 
+    # evaluate
     if config.enable_evaluation:
-        ## evaluate
-        truelable = pd.read_csv("videos/白百何-1.csv", encoding="utf8")
-        truelable = truelable[["入点", "出点"]].values
-        print(truelable)
-
-        for row_index in range(len(truelable)):
-            for col_index in range(len(truelable[row_index])):
-                truelable[row_index][col_index] = processframe(video_fps, truelable[row_index][col_index])
-
-        print(truelable)
-        missed = 0
-        total = 0
-        preset = []
-        valset = []
-        for pair in canditates:
-            preset += [i for i in range(pair[0], pair[1])]
-
-        for pair in truelable:
-            valset += [i for i in range(pair[0], pair[1])]
-
-        preset = set(preset)
-        valset = set(valset)
-
-        FPR = len(preset - valset) / len(preset)
-        recall = len(preset & valset) / len(valset)
-        print("total valid  frames: ", total)
-        print("total missed  frames: ", missed)
-        print("FPR: ", FPR)
-        print("Recall: ", recall)
+        evaluate_result()

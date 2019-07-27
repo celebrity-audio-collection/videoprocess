@@ -2,26 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f4cd8a6f-3fe3-49c7-86dd-36397aaadac7" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/videos/白百何-1.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/AudioCollection.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/AudioCollection.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/OpenCV_face1.py" beforeDir="false" afterPath="$PROJECT_DIR$/OpenCV_face1.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RetinaFaceModel/insightface/RetinaFace/retinaface.py" beforeDir="false" afterPath="$PROJECT_DIR$/RetinaFaceModel/insightface/RetinaFace/retinaface.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RetinaFaceModel/insightface/src/common/face_preprocess.py" beforeDir="false" afterPath="$PROJECT_DIR$/RetinaFaceModel/insightface/src/common/face_preprocess.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RetinaFaceModel/src/recognizer_video.py" beforeDir="false" afterPath="$PROJECT_DIR$/RetinaFaceModel/src/recognizer_video.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/OpenCV_face1.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RetinaFaceModel/insightface/deploy/face_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/RetinaFaceModel/insightface/deploy/face_model.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/common.py" beforeDir="false" afterPath="$PROJECT_DIR$/common.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/evl.py" beforeDir="false" afterPath="$PROJECT_DIR$/evl.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/evl.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluate.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/face_detection.py" beforeDir="false" afterPath="$PROJECT_DIR$/face_detection.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/face_validation.py" beforeDir="false" afterPath="$PROJECT_DIR$/face_validation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/landmark_predictor.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/model/mobilenet/log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/model/mobilenet/model-0000.params" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/model/mobilenet/model-symbol.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/my_tracker.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_tracker.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/run.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/speaker_validation.py" beforeDir="false" afterPath="$PROJECT_DIR$/speaker_validation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/temp/audio.wav" beforeDir="false" afterPath="$PROJECT_DIR$/temp/audio.wav" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testans.txt" beforeDir="false" afterPath="$PROJECT_DIR$/testans.txt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -30,6 +21,11 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="Lewis Chen &lt;38184679+lewivir@users.noreply.github.com&gt;" />
+      </list>
+    </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
         <entry key="$PROJECT_DIR$" value="master" />
@@ -66,7 +62,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.evl">
+  <component name="RunManager" selected="Python.run">
     <configuration name="common" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="AudioCollection" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -102,7 +98,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/evl.py" />
+      <option name="SCRIPT_NAME" value="C:\Users\haoli\PycharmProjects\videoprocess\evaluate.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -155,7 +151,16 @@
       <updated>1564109772823</updated>
       <workItem from="1564137057920" duration="148000" />
       <workItem from="1564139244159" duration="28995000" />
+      <workItem from="1564216283230" duration="4264000" />
     </task>
+    <task id="LOCAL-00001" summary="RetinaFace &amp; InsightFace embedded, to be cleaned">
+      <created>1564216609804</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1564216609804</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -174,6 +179,10 @@
       </map>
     </option>
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="RetinaFace &amp; InsightFace embedded, to be cleaned" />
+    <option name="LAST_COMMIT_MESSAGE" value="RetinaFace &amp; InsightFace embedded, to be cleaned" />
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
@@ -181,11 +190,6 @@
           <url>file://$PROJECT_DIR$/RetinaFaceModel/insightface/src/common/face_preprocess.py</url>
           <line>73</line>
           <option name="timeStamp" value="2" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/evl.py</url>
-          <line>15</line>
-          <option name="timeStamp" value="5" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -197,7 +201,7 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/videoprocess$common.coverage" NAME="common Coverage Results" MODIFIED="1564201540077" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/videoprocess$run.coverage" NAME="run Coverage Results" MODIFIED="1564206492431" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/videoprocess$run.coverage" NAME="run Coverage Results" MODIFIED="1564220481287" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/videoprocess$evl.coverage" NAME="evl Coverage Results" MODIFIED="1564207846004" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

@@ -6,7 +6,7 @@ from common import config
 
 class MyTracker:
 
-    def __init__(self, raw_img, boundarybox, serieid, lipcenter, shotcount):
+    def __init__(self, raw_img, boundary_box, series_id, lip_center, shot_count):
         if config.tracker_type == 'BOOSTING':
             self.tracker = cv2.TrackerBoosting_create()
         if config.tracker_type == 'MIL':
@@ -23,58 +23,57 @@ class MyTracker:
             self.tracker = cv2.TrackerMOSSE_create()
 
         self.tracker = cv2.TrackerMOSSE_create()
-        self.bbox = (boundarybox[0], boundarybox[1], boundarybox[2] - boundarybox[0], boundarybox[3] - boundarybox[1])
+        self.bbox = (boundary_box[0], boundary_box[1], boundary_box[2] - boundary_box[0], boundary_box[3] - boundary_box[1])
 
         self.tracked = True
-        self.serie_name = "series" + str(serieid)
+        self.series_name = "Series" + str(series_id)
         self.drop_count = 0
         self.valid = True
-        self.startshot = shotcount
-        self.endshot = None
+        self.start_shot = shot_count
+        self.end_shot = None
         self.delta = (0, 0)
         # self.seqlist = []
-        self.syncseq = []
-        self.lastlipbox = None
-        self.update_lip_seq(raw_img, boundarybox, lipcenter)
+        self.sync_seq = []
+        self.last_lip_box = None
+        self.update_lip_seq(raw_img, boundary_box, lip_center)
         self.tracker.init(raw_img, self.bbox)
         self.remove = False
 
-    def update_lip_seq(self, raw_img, boundarybox, lipcenter=None):
-        if lipcenter is not None:
-            length = int(max(boundarybox[3] - boundarybox[1], boundarybox[2] - boundarybox[0]) / 2)
-            lipbox = [max(lipcenter[1] - length, 0), lipcenter[1] + length,
-                      max(lipcenter[0] - length, 0), lipcenter[0] + length]
-            lipcenter_picture = raw_img[int(lipbox[0]):int(lipbox[1]), int(lipbox[2]):int(lipbox[3]), :]
-            lipcenter_picture = misc.imresize(lipcenter_picture, (224, 224), interp='bilinear')
-            self.syncseq.append(lipcenter_picture)
-            self.lastlipbox = lipbox
+    def update_lip_seq(self, raw_img, boundary_box, lip_center=None):
+        if lip_center is not None:
+            length = int(max(boundary_box[3] - boundary_box[1], boundary_box[2] - boundary_box[0]) / 2)
+            lip_box = [max(lip_center[1] - length, 0), lip_center[1] + length,
+                      max(lip_center[0] - length, 0), lip_center[0] + length]
+            lip_center_picture = raw_img[int(lip_box[0]):int(lip_box[1]), int(lip_box[2]):int(lip_box[3]), :]
+            lip_center_picture = misc.imresize(lip_center_picture, (224, 224), interp='bilinear')
+            self.sync_seq.append(lip_center_picture)
+            self.last_lip_box = lip_box
         else:
-            lipbox = self.lastlipbox
-            lipbox = [int(max(lipbox[0] + self.delta[1], 0)), int(max(lipbox[1] + self.delta[0], 0)),
-                      int(max(lipbox[2] + self.delta[1], 0)), int(max(lipbox[3] + self.delta[0], 0))]
-            lipcenter_picture = raw_img[lipbox[0]:lipbox[1], lipbox[2]:lipbox[3], :]
-            lipcenter_picture = misc.imresize(lipcenter_picture, (224, 224), interp='bilinear')
-            self.syncseq.append(lipcenter_picture)
-            self.lastlipbox = lipbox
+            lip_box = self.last_lip_box
+            lip_box = [int(max(lip_box[0] + self.delta[1], 0)), int(max(lip_box[1] + self.delta[0], 0)),
+                      int(max(lip_box[2] + self.delta[1], 0)), int(max(lip_box[3] + self.delta[0], 0))]
+            lip_center_picture = raw_img[lip_box[0]:lip_box[1], lip_box[2]:lip_box[3], :]
+            lip_center_picture = misc.imresize(lip_center_picture, (224, 224), interp='bilinear')
+            self.sync_seq.append(lip_center_picture)
+            self.last_lip_box = lip_box
 
-    def update(self, raw_img, shotcount):
-        self.tracked, newbbox = self.tracker.update(raw_img)
+    def update(self, raw_img, shot_count):
+        self.tracked, new_bbox = self.tracker.update(raw_img)
         if self.tracked is True:
-            self.delta = (newbbox[0] - self.bbox[0] + (newbbox[2] - self.bbox[2]) / 2,
-                          newbbox[1] - self.bbox[1] + (newbbox[3] - self.bbox[3]) / 2)
-            self.bbox = newbbox
+            self.delta = (new_bbox[0] - self.bbox[0] + (new_bbox[2] - self.bbox[2]) / 2,
+                          new_bbox[1] - self.bbox[1] + (new_bbox[3] - self.bbox[3]) / 2)
+            self.bbox = new_bbox
             self.valid = False
         else:
-            self.endshot = shotcount
+            self.end_shot = shot_count
             self.remove = True
         return self.tracked, self.bbox
 
     def is_tracking(self, center):
         tracking_area = self.bbox
-        # print('boxcenter',boxcenter)
-        areacenter = (tracking_area[0] + tracking_area[2] / 2, tracking_area[1] + tracking_area[3] / 2)
-        # print('areacenter', areacenter)
-        distance = np.sqrt(np.sum(np.square(np.subtract(list(areacenter), list(center)))))
+        area_center = (tracking_area[0] + tracking_area[2] / 2, tracking_area[1] + tracking_area[3] / 2)
+        # print('area_center', area_center)
+        distance = np.sqrt(np.sum(np.square(np.subtract(list(area_center), list(center)))))
         # print("distance",distance)
         if distance < 0.3 * np.sqrt(np.sum(np.square([tracking_area[2], tracking_area[3]]))):
             return True
@@ -86,8 +85,8 @@ class MyTracker:
             return True
         tracking_area = tracking_area = self.bbox
         # print('boxcenter',boxcenter)
-        areacenter = (tracking_area[0] + tracking_area[2] / 2, tracking_area[1] + tracking_area[3] / 2)
-        distance = np.sqrt(np.sum(np.square(np.subtract([center[1], center[0]], list(areacenter)))))
+        area_center = (tracking_area[0] + tracking_area[2] / 2, tracking_area[1] + tracking_area[3] / 2)
+        distance = np.sqrt(np.sum(np.square(np.subtract([center[1], center[0]], list(area_center)))))
         # print("distance",distance)
         # if distance < 0.3 * np.sqrt(np.sum(np.square([b[2] - b[0], b[3] - b[1]]))):
         if distance < 0.3 * np.sqrt(np.sum(np.square([tracking_area[2], tracking_area[3]]))):
@@ -98,13 +97,13 @@ class MyTracker:
             return False
 
     def get_lip_seq(self):
-        return self.syncseq
+        return self.sync_seq
 
     def get_drop_count(self):
         return self.drop_count
 
     def get_shot_range(self):
-        return (self.startshot, self.endshot)
+        return self.start_shot, self.end_shot
 
     def drop(self):
         if self.drop_count >= 8:
@@ -112,5 +111,5 @@ class MyTracker:
         else:
             return False
 
-    def set_endshot(self, shotcount):
-        self.endshot = shotcount
+    def set_endshot(self, shot_count):
+        self.end_shot = shot_count

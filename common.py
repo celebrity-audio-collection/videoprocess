@@ -2,6 +2,7 @@ import os
 
 POI = '白百何'
 
+
 class Config:
     log_dir = './log/log.txt'
 
@@ -11,19 +12,16 @@ class Config:
     image_files = [os.path.join(os.getcwd(), 'images', POI, file) for file in
                    os.listdir(os.path.join(os.getcwd(), 'images', POI))]
 
-    face_detection_model = 'model/face_detector.resnet50_retinanet.inference.h5'
     landmark_predictor = "model/dlib/shape_predictor_68_face_landmarks.dat"
-    face_validation_path = "model/facenet_model/20180402-114759"
 
-    # lip_movement_modelpath = r"D:\\CSLT\\Retinanet_face\\keras-retinanet\\model\\lip_movement_model\\2_64_False_True_0.5_lip_motion_net_model.h5"
-    syncnet_model = r"C:\Users\haoli\PycharmProjects\syncnet_python-master-pytorch\data\syncnet_v2.model"
     exp_name = os.path.basename(log_dir)
 
     # visual
-    # debug = True
     showimg = True
 
-    # Retinaface
+    # RetinaFace
+    detect_scale = [360, 640]
+    retinaface_model = 'model/retinaface_model/mnet.25/mnet.25'
     thresh = 0.8
     gpuid = 0
 
@@ -32,13 +30,14 @@ class Config:
     patience = 8
 
     # face validation
-    ## face net
+    # FaceNet
     use_facenet = False
+    face_validation_path = "model/facenet_model/20180402-114759"
     validation_imagesize = 160
     margin = 44
     threshold = 0.9
 
-    ## insight face
+    # InsightFace
     if use_facenet == False:
         use_insightface = True
     else:
@@ -48,7 +47,9 @@ class Config:
     dist_threshold = 1.24
 
     # speaker validation
+    # SyncNet
     enable_syncnet = True
+    syncnet_model = r"C:\Users\haoli\PycharmProjects\syncnet_python-master-pytorch\data\syncnet_v2.model"
     starting_confidence = 4
     patient_confidence = 3
 

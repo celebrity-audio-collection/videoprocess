@@ -15,13 +15,14 @@ if config.use_facenet:
     import facenet_code.align.detect_face
     from facenet_code import facenet
 
+
 class FaceValidation:
 
     def __init__(self, model_path=config.face_validation_path):
 
         if config.use_insightface:
             parser = argparse.ArgumentParser(description='face model test')
-            # general
+            # InsightFace
             parser.add_argument('--image-size', default='112,112', help='')
             parser.add_argument('--model', default=config.mobilenet_dir, help='path to load model.')
             parser.add_argument('--ga-model', default='', help='path to load model.')
@@ -33,7 +34,6 @@ class FaceValidation:
             args = parser.parse_args()
 
             self.valmodel = FaceModel(args)
-
 
         elif config.use_facenet:
             self.graph = tf.Graph()
@@ -119,7 +119,7 @@ class FaceValidation:
 
         return embd
 
-    def findCosineDistance(self, vector1, vector2):
+    def find_cosine_distance(self, vector1, vector2):
         """
         Calculate cosine distance between two vector
         """
@@ -136,21 +136,19 @@ class FaceValidation:
         source = sklearn.preprocessing.normalize(source)
         return euclidean(target, source)
 
-    def Confirm_validity(self, raw_image, boundary, landmark):
+    def confirm_validity(self, raw_image, boundary, landmark):
 
         if config.use_insightface:
-            processed_facepicture = preprocess(raw_image, bbox=boundary, landmark=landmark, image_size='112,112')
-            processed_facepicture = cv2.cvtColor(processed_facepicture, cv2.COLOR_BGR2RGB)
-            processed_facepicture = np.transpose(processed_facepicture, (2, 0, 1))
-            embedding = self.valmodel.get_feature(processed_facepicture).reshape(1, -1)
+            processed_face_pic = preprocess(raw_image, bbox=boundary, landmark=landmark, image_size='112,112')
+            processed_face_pic = cv2.cvtColor(processed_face_pic, cv2.COLOR_BGR2RGB)
+            processed_face_pic = np.transpose(processed_face_pic, (2, 0, 1))
+            embedding = self.valmodel.get_feature(processed_face_pic).reshape(1, -1)
             avg = 0
             dist_list = []
             for i in range(len(self.labelembds)):
-                # cosdist = np.sqrt(np.sum(np.square(np.subtract(self.labelembds[i, :], picembd[0, :]))))
                 # cosdist = self.findCosineDistance(self.labelembds[i],embedding)
                 dist = self.cal_distance(embedding, self.labelembds[i])
                 dist_list.append(dist)
-                # print("face validation：",dist)
                 avg += dist
             value = avg / (len(self.labelembds))
             print("dist_avg: {:.3f}".format(value))
@@ -159,25 +157,21 @@ class FaceValidation:
                 return True
             else:
                 return False
+
         elif config.use_facenet:
             if boundary[0] < 0 or boundary[2] > raw_image.shape[1] or \
-               boundary[1] < 0 or boundary[3] > raw_image.shape[0]:
+                    boundary[1] < 0 or boundary[3] > raw_image.shape[0]:
                 return False
-
             length = int(max(boundary[3] - boundary[1], boundary[2] - boundary[0]) / 2)
             center = [int((boundary[1] + boundary[3]) / 2), int((boundary[0] + boundary[2]) / 2)]
-
             facepicture = raw_image[max(center[0] - length, 0):center[0] + length,
                           max(center[1] - length, 0):center[1] + length, :]
-
-            processed_facepicture = self.process_cutted_image(facepicture)
-
-            picembd = self.compute_embedings([processed_facepicture])
+            processed_face_pic = self.process_cutted_image(facepicture)
+            picembd = self.compute_embedings([processed_face_pic])
             avg = 0
             # 此处更新计算合法性算法
             for i in range(len(self.labelembds)):
                 dist = np.sqrt(np.sum(np.square(np.subtract(self.labelembds[i, :], picembd[0, :]))))
-                # print("face validation：",dist)
                 avg += dist
             value = avg / (len(self.labelembds))
 
