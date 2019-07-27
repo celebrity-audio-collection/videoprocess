@@ -4,6 +4,8 @@ from PIL import Image
 
 video_path = "E:\\CSLT1000\\vedios\\彭冠英\\interview\\4.时尚星秀采访之什么发型才是斩男绝杀(Av30481649,P4).mp4"
 opencv_path = "data/haarcascades/haarcascade_frontalface_alt2.xml"
+
+
 def CatchUsbVideo(window_name, camera_idx):
     cv2.namedWindow(window_name)
 
@@ -46,4 +48,4 @@ if __name__ == '__main__':
     if len(sys.argv) != 1:
         print("Usage:%s camera_id\r\n" % (sys.argv[0]))
     else:
-        CatchUsbVideo("识别人脸区域", video_path) # 第二个参数为0时默认为摄像头，实际需要替换成路径
+        CatchUsbVideo("识别人脸区域", video_path)  # 第二个参数为0时默认为摄像头，实际需要替换成路径

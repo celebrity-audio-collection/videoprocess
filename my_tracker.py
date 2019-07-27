@@ -1,10 +1,12 @@
 import cv2
 import numpy as np
 from scipy import misc
-from common import  config
+from common import config
+
+
 class MyTracker:
 
-    def __init__(self,raw_img, boundarybox, serieid, lipcenter, shotcount):
+    def __init__(self, raw_img, boundarybox, serieid, lipcenter, shotcount):
         if config.tracker_type == 'BOOSTING':
             self.tracker = cv2.TrackerBoosting_create()
         if config.tracker_type == 'MIL':
@@ -33,14 +35,11 @@ class MyTracker:
         # self.seqlist = []
         self.syncseq = []
         self.lastlipbox = None
-        self.update_lip_seq(raw_img ,boundarybox, lipcenter)
+        self.update_lip_seq(raw_img, boundarybox, lipcenter)
         self.tracker.init(raw_img, self.bbox)
         self.remove = False
 
-    '''
-    
-    '''
-    def update_lip_seq(self, raw_img, boundarybox, lipcenter = None):
+    def update_lip_seq(self, raw_img, boundarybox, lipcenter=None):
         if lipcenter is not None:
             length = int(max(boundarybox[3] - boundarybox[1], boundarybox[2] - boundarybox[0]) / 2)
             lipbox = [max(lipcenter[1] - length, 0), lipcenter[1] + length,
@@ -58,16 +57,15 @@ class MyTracker:
             self.syncseq.append(lipcenter_picture)
             self.lastlipbox = lipbox
 
-
-    def update(self,raw_img, shotcount):
+    def update(self, raw_img, shotcount):
         self.tracked, newbbox = self.tracker.update(raw_img)
         if self.tracked is True:
             self.delta = (newbbox[0] - self.bbox[0] + (newbbox[2] - self.bbox[2]) / 2,
-                                newbbox[1] - self.bbox[1] + (newbbox[3] - self.bbox[3]) / 2)
+                          newbbox[1] - self.bbox[1] + (newbbox[3] - self.bbox[3]) / 2)
             self.bbox = newbbox
             self.valid = False
         else:
-            self.endshot =  shotcount
+            self.endshot = shotcount
             self.remove = True
         return self.tracked, self.bbox
 

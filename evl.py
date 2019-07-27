@@ -1,26 +1,26 @@
 import pandas as pd
 
 
-def processframe(video_fps,stringin):
+def processframe(video_fps, stringin):
     strcrop = stringin.split(":")
-    frame  = 0
-    frame += int(strcrop[0])*25*60*60
-    frame += int(strcrop[1])*25*60
-    frame += int(strcrop[2])*25
+    frame = 0
+    frame += int(strcrop[0]) * 25 * 60 * 60
+    frame += int(strcrop[1]) * 25 * 60
+    frame += int(strcrop[2]) * 25
     frame += int(strcrop[3])
-    frame = int(frame * video_fps/25.0)
+    frame = int(frame * video_fps / 25.0)
     return frame
-#
-#
-truelable = pd.read_csv("F:\\白百何\\interview\\interview-1\\interview-1.csv", encoding="utf8")
+
+
+truelable = pd.read_csv("videos/白百何-1.csv", encoding="utf-16-le", sep='\t')
 truelable = truelable[["入点", "出点"]].values
 print(truelable)
 canditates = []
 with open("testans.txt") as f:
     a = f.readline()
-    while a !="":
+    while a != "":
         pair = a.split(":")
-        canditates.append([int(pair[0]),int(pair[1])])
+        canditates.append([int(pair[0]), int(pair[1])])
         a = f.readline()
 
 print(canditates)
@@ -52,5 +52,5 @@ FPR = len(preset - valset) / len(preset)
 recall = len(preset & valset) / len(valset)
 print("total valid  frames: ", total)
 print("total missed  frames: ", missed)
-print ("FPR: ", FPR)
+print("FPR: ", FPR)
 print("Recall: ", recall)

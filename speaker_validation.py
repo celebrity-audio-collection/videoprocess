@@ -2,7 +2,9 @@ from common import config
 from syncnet import SyncNetInstance
 import numpy as np
 import cv2
-class FpeakerValidation:
+
+
+class SpeakerValidation:
 
     def __init__(self):
         self.model = SyncNetInstance.SyncNetInstance()
@@ -11,7 +13,7 @@ class FpeakerValidation:
     def evaluate(self, video_fps, imageseq, audioseq):
         if len(imageseq) <= 6:
             return None, np.array([0]), None
-        offset, confidence, dists_npy =  self.model.evaluate_part(video_fps,imageseq,audioseq)
+        offset, confidence, dists_npy = self.model.evaluate_part(video_fps, imageseq, audioseq)
         # if len(imageseq) != len (confidence):
         #     print("WOW")
         #     print(len(imageseq),len (confidence))
