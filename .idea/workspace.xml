@@ -2,17 +2,48 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f4cd8a6f-3fe3-49c7-86dd-36397aaadac7" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/images/蔡康永/蔡康永-1.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/.idea/lip-movement-net.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/LICENSE" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/assets/dataset_folder_structure.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/assets/figure1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/assets/sample_source_dataset.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/csv/grid_options.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/data/dataset_source/._create_source_dataset_directory_structure_here.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/data/dataset_source/create_source_dataset_directory_structure_here.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/models/1_128_True_False_0.5_lip_motion_net_model.h5" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/models/1_32_False_True_0.25_lip_motion_net_model.h5" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/models/1_64_True_True_0.0_lip_motion_net_model.h5" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/models/1_64_True_True_0.25_lip_motion_net_model.h5" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/models/2_64_False_True_0.5_lip_motion_net_model.h5" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/models/shape_predictor_68_face_landmarks.dat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/models/the_shape_predictor_is_from_the_dlib_project.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/run.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/scripts/prepare.bat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/scripts/prepare.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/scripts/test_video.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/scripts/train.bat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/scripts/train.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/scripts/train_using_grid_search.bat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/scripts/train_using_grid_search.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/speaking_detection.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/src/lip_movement_net.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/src/prepare_training_dataset.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/videos/044598381-carl-rowan-delivering-speech-a.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/videos/044610038-close-astronaut-buzz-aldrin-sm.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/videos/044610066-astronaut-michael-collins-talk.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/videos/copyright.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lip-movement-net/videos/interview-1.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_lip.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/videos/蔡康永/蔡康永-1.mp4" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RetinaFaceModel/insightface/RetinaFace/retinaface.py" beforeDir="false" afterPath="$PROJECT_DIR$/RetinaFaceModel/insightface/RetinaFace/retinaface.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/common.py" beforeDir="false" afterPath="$PROJECT_DIR$/common.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/evaluate.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluate.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/face_validation.py" beforeDir="false" afterPath="$PROJECT_DIR$/face_validation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_tracker.py" beforeDir="false" afterPath="$PROJECT_DIR$/cv_tracker.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/run.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syncnet/SyncNetInstance.py" beforeDir="false" afterPath="$PROJECT_DIR$/syncnet/SyncNetInstance.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/temp/audio.wav" beforeDir="false" afterPath="$PROJECT_DIR$/temp/audio.wav" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testans.txt" beforeDir="false" afterPath="$PROJECT_DIR$/testans.txt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -20,11 +51,18 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="PREVIOUS_COMMIT_AUTHORS">
       <list>
-        <option value="Lewis Chen &lt;lewivir@163.com&gt;" />
         <option value="Lewis Chen &lt;38184679+lewivir@users.noreply.github.com&gt;" />
+        <option value="Lewis Chen &lt;lewivir@163.com&gt;" />
       </list>
     </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
@@ -36,7 +74,11 @@
     <option name="UPDATE_TYPE" value="MERGE" />
   </component>
   <component name="ProjectId" id="1OXw419m5ocwFhqP2UHqGp0EGEZ" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/videos/白百何" />
@@ -152,13 +194,42 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="test_lip" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="AudioCollection" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test_lip.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.common" />
+      <item itemvalue="Python.evaluate" />
+      <item itemvalue="Python.evl" />
+      <item itemvalue="Python.run" />
+      <item itemvalue="Python.test_lip" />
+    </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.run" />
+        <item itemvalue="Python.test_lip" />
         <item itemvalue="Python.evaluate" />
         <item itemvalue="Python.evl" />
         <item itemvalue="Python.common" />
-        <item itemvalue="Python.evl" />
       </list>
     </recent_temporary>
   </component>
@@ -174,7 +245,8 @@
       <updated>1564109772823</updated>
       <workItem from="1564137057920" duration="148000" />
       <workItem from="1564139244159" duration="28995000" />
-      <workItem from="1564216283230" duration="26959000" />
+      <workItem from="1564216283230" duration="29299000" />
+      <workItem from="1564300570151" duration="11665000" />
     </task>
     <task id="LOCAL-00001" summary="RetinaFace &amp; InsightFace embedded, to be cleaned">
       <created>1564216609804</created>
@@ -190,7 +262,14 @@
       <option name="project" value="LOCAL" />
       <updated>1564220784826</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Using RetinaFace &amp; InsightFace, add debug mode">
+      <created>1564294375210</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1564294375210</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -210,14 +289,18 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="RetinaFace &amp; InsightFace embedded, to be cleaned" />
     <MESSAGE value="Using RetinaFace &amp; InsightFace" />
-    <option name="LAST_COMMIT_MESSAGE" value="Using RetinaFace &amp; InsightFace" />
+    <MESSAGE value="Using RetinaFace &amp; InsightFace, add debug mode" />
+    <option name="LAST_COMMIT_MESSAGE" value="Using RetinaFace &amp; InsightFace, add debug mode" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/videoprocess$evaluate.coverage" NAME="evaluate Coverage Results" MODIFIED="1564240948252" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/videoprocess$common.coverage" NAME="common Coverage Results" MODIFIED="1564201540077" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/videoprocess$run.coverage" NAME="run Coverage Results" MODIFIED="1564293527878" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/videoprocess$run.coverage" NAME="run Coverage Results" MODIFIED="1564319459302" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/videoprocess$test_lip.coverage" NAME="test_lip Coverage Results" MODIFIED="1564304706691" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/videoprocess$evl.coverage" NAME="evl Coverage Results" MODIFIED="1564207846004" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/videoprocess$pytest_in_test_lip_py.coverage" NAME="pytest in test_lip.py Coverage Results" MODIFIED="1564301972233" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
