@@ -1,12 +1,12 @@
 import os
 
-POI = '白百何'
+POI = '蔡明'
 
 
 class Config:
     log_dir = './log/log.txt'
 
-    video_num = 1
+    video_num = 2
     video_dir = [os.path.join(os.getcwd(), 'videos', POI, file) for file in
                  os.listdir(os.path.join(os.getcwd(), 'videos', POI))][video_num - 1]
     image_files = [os.path.join(os.getcwd(), 'images', POI, file) for file in
@@ -18,6 +18,7 @@ class Config:
 
     # visual
     showimg = True
+    debug = True
 
     # RetinaFace
     detect_scale = [360, 640]
@@ -38,7 +39,7 @@ class Config:
     threshold = 0.9
 
     # InsightFace
-    if use_facenet == False:
+    if not use_facenet:
         use_insightface = True
     else:
         use_insightface = False

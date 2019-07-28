@@ -85,7 +85,7 @@ class SyncNetInstance(torch.nn.Module):
 
         if (float(len(audio))/16000) < (float(len(images))/25) :
             print(" *** WARNING: The audio (%.4fs) is shorter than the video (%.4fs). Type 'cont' to continue. *** "%(float(len(audio))/16000,float(len(images))/25))
-            pdb.set_trace()
+            # pdb.set_trace()
         
         # ========== ==========
         # Generate video and audio feats
@@ -171,7 +171,7 @@ class SyncNetInstance(torch.nn.Module):
         if (float(len(audio)) / 16000) < (float(len(images)) / video_fps):
             print(" *** WARNING: The audio (%.4fs) is shorter than the video (%.4fs). Type 'cont' to continue. *** " % (
             float(len(audio)) / 16000, float(len(images)) / video_fps))
-            pdb.set_trace()
+            # pdb.set_trace()
 
         # ========== ==========
         # Generate video and audio feats
@@ -218,9 +218,10 @@ class SyncNetInstance(torch.nn.Module):
         fconfm = signal.medfilt(fconf, kernel_size=9)
 
         numpy.set_printoptions(formatter={'float': '{: 0.3f}'.format})
-        # print('Framewise conf: ')
-        # print(fconfm)
-        # print('AV offset: \t%d \nMin dist: \t%.3f\nConfidence: \t%.3f' % (offset, minval, conf))
+        print('Framewise conf: ')
+        print(fconfm)
+        print('AV offset: \t%d \nMin dist: \t%.3f\nConfidence: \t%.3f' % (offset, minval, conf))
+        print('Confidence length:', len(fconf))
 
         dists_npy = numpy.array([dist.numpy() for dist in dists])
         return offset.numpy(), fconfm, dists_npy

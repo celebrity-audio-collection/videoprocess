@@ -56,7 +56,7 @@ class FaceValidation:
                 img1 = self.valmodel.get_input(img1)
                 features.append(self.valmodel.get_feature(img1).reshape(1, -1))
             self.labelembds += features
-            print(self.labelembds)
+            # print(self.labelembds)
         elif config.use_facenet:
             self.image_list = self.load_and_align_data(imgdir_list, config.validation_imagesize, config.margin)
             self.labelembds = self.compute_embedings(self.image_list)

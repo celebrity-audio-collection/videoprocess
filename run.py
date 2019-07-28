@@ -4,7 +4,7 @@ from __future__ import division
 from __future__ import print_function
 
 from common import config
-from my_tracker import MyTracker
+from cv_tracker import CV_Tracker
 from face_detection import FaceDetection
 from face_validation import FaceValidation
 from speaker_validation import SpeakerValidation
@@ -67,24 +67,24 @@ if __name__ == '__main__':
     cap = cv2.VideoCapture(config.video_dir)
     video_fps = cap.get(cv2.CAP_PROP_FPS)
     print("Video FPS:", video_fps)
+
     for i in range(0):
         cap.read()
 
     while True:
         start_time = time.time()
-        ret, raw_image = cap.read()
-        if ret == False:
+        success, raw_image = cap.read()
+        if not success:
             break
 
         raw_image = cv2.resize(raw_image, (1280, 720))
-        image = raw_image.copy()
-        bboxes, landmarks = face_detection_model.update(image)
-        img_split = raw_image.copy()
+        bboxes, landmarks = face_detection_model.update(raw_image)
         new_tracker_list = []
 
         # track
         for tracker in tracker_list:
-            tracked, bbox = tracker.update(img_split, shot_count)
+            tracked, bbox = tracker.update(raw_image, shot_count)
+            # if target lost, start SyncNet process
             if tracked is False:
                 if config.enable_syncnet:
                     print(16000 * tracker.start_shot // video_fps, 16000 * (tracker.end_shot) // video_fps)
@@ -100,35 +100,54 @@ if __name__ == '__main__':
                         print(len(part_audio))
                         # exit(-1)
                     offset, confidence, dists_npy = speaker_validation.evaluate(video_fps, tracker.sync_seq, part_audio)
+                    if config.debug:
+                        print("Sequence length:", len(tracker.sync_seq[:-config.patience]))
+                        for i in range(len(tracker.raw_seq[:-config.patience])):
+                            img = tracker.raw_seq[i].copy()
+                            box = tracker.bbox_seq[i]
+                            cv2.rectangle(img, (box[0], box[1]), (box[2], box[3]), (255, 0, 0), 2, cv2.LINE_AA)
+                            try:
+                                confidence_caption = 'Conf: %.3f' % (confidence[i])
+                            except:
+                                confidence_caption = 'Conf: exceeded'
+                            cv2.putText(img, confidence_caption, (int(box[0]), int(box[1]) - 10),
+                                        cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
+                            cv2.putText(img, confidence_caption, (int(box[0]), int(box[1]) - 10),
+                                        cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
+                            cv2.imshow('Speaking', img)
+                            cv2.waitKey(40)
+                        cv2.waitKey(0)
                     prelabels = speaker_validation.verification(confidence, tracker.start_shot, predict_results)
                     candidates = candidates + prelabels
             else:
                 new_tracker_list.append(tracker)
         tracker_list = new_tracker_list
 
+        # for each face detected
         for boundary, landmark in zip(bboxes, landmarks):
             boundary = boundary.astype(np.int)
             center = [int((boundary[1] + boundary[3]) / 2), int((boundary[0] + boundary[2]) / 2)]
-            tt = time.time()
             validation = facenet_model.confirm_validity(raw_image, boundary=boundary, landmark=landmark)
 
             if validation:
                 caption = "Yes"
                 tracking = isTracking((center[1], center[0]), tracker_list)
-                lipcenter = np.mean(landmark[3:4], axis=0)
+                lip_center = np.mean(landmark[3:], axis=0)
+                # new target
                 if not tracking:
                     series_id += 1
-                    newtracker = MyTracker(img_split, boundary, series_id, lipcenter, shot_count)
-                    tracker_list.append(newtracker)
+                    new_tracker = CV_Tracker(raw_image, boundary, series_id, lip_center, shot_count)
+                    tracker_list.append(new_tracker)
                 else:
                     for tracker in tracker_list:
-                        if (tracker.valid is True):
+                        if tracker.valid is True:
                             continue
                         if tracker.is_valid(center):
                             # build lip picture sequence
-                            tracker.update_lip_seq(img_split, boundary, lipcenter)
+                            tracker.update_lip_seq(raw_image, boundary, lip_center)
             else:
                 caption = "No"
+
             if config.showimg:
                 cv2.rectangle(raw_image, (boundary[0], boundary[1]), (boundary[2], boundary[3]), (0, 255, 0), 2,
                               cv2.LINE_AA)
@@ -138,8 +157,8 @@ if __name__ == '__main__':
                     cv2.circle(raw_image, pos, 1, (255, 255, 255 / 68 * index_color), -1)
                     index_color = index_color + 1
                 # lip center
-                lipcenter = np.mean(landmark[3:], axis=0)
-                cv2.circle(raw_image, (lipcenter[0], lipcenter[1]), 1, (0, 0, 0), -1)
+                lip_center = np.mean(landmark[3:], axis=0)
+                cv2.circle(raw_image, (lip_center[0], lip_center[1]), 1, (0, 0, 0), -1)
                 for tracker in tracker_list:
                     if tracker.tracked is True:
                         bbox = tracker.bbox
@@ -160,9 +179,9 @@ if __name__ == '__main__':
         for tracker in tracker_list:
             if tracker.valid is False:
                 tracker.drop_count += 1
-                tracker.update_lip_seq(img_split, boundary, None)
+                # tracker.update_lip_seq(raw_image, boundary, None)
             if tracker.drop():
-                tracker.set_endshot(shot_count)
+                tracker.set_end_shot(shot_count)
                 if config.enable_syncnet:
                     part_audio = audio[int(16000 // video_fps * tracker.start_shot): int(
                         16000 // video_fps * (tracker.end_shot - config.patience + 1))]
@@ -176,12 +195,29 @@ if __name__ == '__main__':
                     offset, confidence, dists_npy = speaker_validation.evaluate(video_fps,
                                                                                 tracker.sync_seq[:-config.patience],
                                                                                 part_audio)
+                    if config.debug:
+                        print("Sequence length:", len(tracker.sync_seq[:-config.patience]))
+                        for i in range(len(tracker.raw_seq[:-config.patience])):
+                            img = tracker.raw_seq[i].copy()
+                            box = tracker.bbox_seq[i]
+                            cv2.rectangle(img, (box[0], box[1]), (box[2], box[3]), (255, 0, 0), 2, cv2.LINE_AA)
+                            try:
+                                confidence_caption = 'Conf: %.3f' % (confidence[i])
+                            except:
+                                confidence_caption = 'Conf: exceeded'
+                            cv2.putText(img, confidence_caption, (int(box[0]), int(box[1]) - 10),
+                                        cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
+                            cv2.putText(img, confidence_caption, (int(box[0]), int(box[1]) - 10),
+                                        cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
+                            cv2.imshow('Speaking', img)
+                            cv2.waitKey(40)
+                        cv2.waitKey(0)
                     prelabels = speaker_validation.verification(confidence, tracker.start_shot, predict_results)
                     candidates = candidates + prelabels
-
             else:
                 new_tracker_list.append(tracker)
         tracker_list = new_tracker_list
+
         print('Shot {:d}, FPS {:.2f} '.format(shot_count, 1 / (time.time() - start_time)), end=' ')
         if config.showimg:
             cv2.imshow('Video', raw_image)
