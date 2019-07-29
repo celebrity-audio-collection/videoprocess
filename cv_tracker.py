@@ -34,7 +34,7 @@ class CV_Tracker:
         self.delta = (0, 0)
         self.sync_seq = []
 
-        self.raw_seq = []
+        # self.raw_seq = []
         self.bbox_seq = []
 
         self.last_lip_box = None
@@ -53,7 +53,6 @@ class CV_Tracker:
             self.sync_seq.append(lip_center_picture)
 
             if config.debug:
-                self.raw_seq.append(raw_img)
                 self.bbox_seq.append((boundary_box[0], boundary_box[1], boundary_box[2], boundary_box[3]))
 
             self.last_lip_box = lip_box
@@ -66,11 +65,9 @@ class CV_Tracker:
             self.sync_seq.append(lip_center_picture)
 
             if config.debug:
-                self.raw_seq.append(raw_img)
                 self.bbox_seq.append((boundary_box[0], boundary_box[1], boundary_box[2], boundary_box[3]))
 
             self.last_lip_box = lip_box
-
 
     def update(self, raw_img, shot_count):
         self.tracked, new_bbox = self.tracker.update(raw_img)

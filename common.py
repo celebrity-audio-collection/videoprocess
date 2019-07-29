@@ -1,12 +1,12 @@
 import os
 
-POI = '蔡明'
+POI = '蔡康永'
 
 
 class Config:
     log_dir = './log/log.txt'
 
-    video_num = 2
+    video_num = 1
     video_dir = [os.path.join(os.getcwd(), 'videos', POI, file) for file in
                  os.listdir(os.path.join(os.getcwd(), 'videos', POI))][video_num - 1]
     image_files = [os.path.join(os.getcwd(), 'images', POI, file) for file in
