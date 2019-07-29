@@ -3,6 +3,7 @@ import os
 POI = '白宇'
 
 
+
 class Config:
     log_dir = './log/log.txt'
 
