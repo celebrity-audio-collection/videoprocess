@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append('../insightface')
 sys.path.append('../insightface/deploy')
 sys.path.append('../insightface/src/common')
@@ -17,19 +18,17 @@ import cv2
 import os
 from RetinaFace.retinaface import RetinaFace
 
-
 ap = argparse.ArgumentParser()
 
 ap.add_argument("--mymodel", default="outputs/my_model.h5",
-    help="Path to recognizer model")
+                help="Path to recognizer model")
 ap.add_argument("--le", default="outputs/le.pickle",
-    help="Path to label encoder")
+                help="Path to label encoder")
 ap.add_argument("--embeddings", default="outputs/embeddings.pickle",
-    help='Path to embeddings')
+                help='Path to embeddings')
 ap.add_argument("--video-out", default="../datasets/videos_output/video_test.mp4",
-    help='Path to output video')
+                help='Path to output video')
 ap.add_argument("--video-in", default="../datasets/videos_input/GOT_actor.mp4")
-
 
 ap.add_argument('--image-size', default='112,112', help='')
 ap.add_argument('--model', default='../insightface/models/mobilenet/model,0', help='path to load model.')
@@ -67,12 +66,12 @@ im_scale = float(target_size) / float(im_size_min)
 if np.round(im_scale * im_size_max) > max_size:
     im_scale = float(max_size) / float(im_size_max)
 
-
 # Initialize faces embedding model
-embedding_model =face_model.FaceModel(args)
+embedding_model = face_model.FaceModel(args)
 
 # Load the classifier model
 model = load_model('outputs/my_model.h5')
+
 
 # Define distance function
 def findCosineDistance(vector1, vector2):
@@ -85,7 +84,8 @@ def findCosineDistance(vector1, vector2):
     a = np.dot(vec1.T, vec2)
     b = np.dot(vec1.T, vec1)
     c = np.dot(vec2.T, vec2)
-    return 1 - (a/(np.sqrt(b)*np.sqrt(c)))
+    return 1 - (a / (np.sqrt(b) * np.sqrt(c)))
+
 
 def CosineSimilarity(test_vec, source_vecs):
     """
@@ -94,7 +94,8 @@ def CosineSimilarity(test_vec, source_vecs):
     cos_dist = 0
     for source_vec in source_vecs:
         cos_dist += findCosineDistance(test_vec, source_vec)
-    return cos_dist/len(source_vecs)
+    return cos_dist / len(source_vecs)
+
 
 # Initialize some useful arguments
 cosine_threshold = 0.8
@@ -139,14 +140,15 @@ while True:
                 box = np.array([bbox[0], bbox[1], bbox[2], bbox[3]])
 
                 # bbox = np.array([bbox[0], bbox[1], bbox[0]+bbox[2], bbox[1]+bbox[3]])
-                landmarks = np.array([landmarks[0][0], landmarks[1][0], landmarks[2][0], landmarks[3][0], landmarks[4][0],
-                                     landmarks[0][1], landmarks[1][1], landmarks[2][1], landmarks[3][1], landmarks[4][1]])
-                landmarks = landmarks.reshape((2,5)).T
-                tt= time.time()
+                landmarks = np.array(
+                    [landmarks[0][0], landmarks[1][0], landmarks[2][0], landmarks[3][0], landmarks[4][0],
+                     landmarks[0][1], landmarks[1][1], landmarks[2][1], landmarks[3][1], landmarks[4][1]])
+                landmarks = landmarks.reshape((2, 5)).T
+                tt = time.time()
                 nimg = face_preprocess.preprocess(frame, bbox, landmarks, image_size='112,112')
                 nimg = cv2.cvtColor(nimg, cv2.COLOR_BGR2RGB)
-                nimg = np.transpose(nimg, (2,0,1))
-                embedding = embedding_model.get_feature(nimg).reshape(1,-1)
+                nimg = np.transpose(nimg, (2, 0, 1))
+                embedding = embedding_model.get_feature(nimg).reshape(1, -1)
                 print("face validation cost:", time.time() - tt)
                 text = "Unknown"
 
@@ -169,7 +171,7 @@ while True:
                     # print("Recognized: {} <{:.2f}>".format(name, proba*100))
                 # Start tracking
                 tracker = dlib.correlation_tracker()
-                rect = dlib.rectangle(int(box[0]), int(box[1]), int(box[2]) ,int( box[3]))
+                rect = dlib.rectangle(int(box[0]), int(box[1]), int(box[2]), int(box[3]))
                 tracker.start_track(rgb, rect)
                 trackers.append(tracker)
                 texts.append(text)
@@ -178,7 +180,7 @@ while True:
                 cv2.putText(frame, text, (bbox[0], y), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2)
                 cv2.rectangle(frame, (box[0], box[1]), (box[2], box[3]), (255, 0, 0), 2)
     else:
-        for tracker, text in zip(trackers,texts):
+        for tracker, text in zip(trackers, texts):
             pos = tracker.get_position()
 
             # unpack the position object
@@ -187,8 +189,8 @@ while True:
             endX = int(pos.right())
             endY = int(pos.bottom())
 
-            cv2.rectangle(frame, (startX, startY), (endX, endY), (255,0,0), 2)
-            cv2.putText(frame, text, (startX, startY - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0,0,255),2)
+            cv2.rectangle(frame, (startX, startY), (endX, endY), (255, 0, 0), 2)
+            cv2.putText(frame, text, (startX, startY - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2)
 
     cv2.imshow("Frame", frame)
     # video_out.write(frame)
