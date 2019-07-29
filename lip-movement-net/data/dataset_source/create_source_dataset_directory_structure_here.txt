@@ -1,0 +1,6 @@
+Create directories under this directory as follows:
+/train/
+/val/
+/test/
+
+Refer to the /assets/sample_source_dataset.zip for an example.

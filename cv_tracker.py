@@ -34,8 +34,10 @@ class CV_Tracker:
         self.delta = (0, 0)
         self.sync_seq = []
 
-        self.raw_seq = []
+        # self.raw_seq = []
         self.bbox_seq = []
+
+        self.lip_box_seq = []
 
         self.last_lip_box = None
         self.update_lip_seq(raw_img, boundary_box, lip_center)
@@ -46,15 +48,16 @@ class CV_Tracker:
     def update_lip_seq(self, raw_img, boundary_box, lip_center=None):
         if lip_center is not None:
             length = int(max(boundary_box[3] - boundary_box[1], boundary_box[2] - boundary_box[0]) / 2)
-            lip_box = [max(lip_center[1] - length, 0), lip_center[1] + length,
-                       max(lip_center[0] - length, 0), lip_center[0] + length]
+            lip_box = [int(max(lip_center[1] - length, 0)), int(lip_center[1] + length),
+                       int(max(lip_center[0] - length, 0)), int(lip_center[0] + length)]
             lip_center_picture = raw_img[int(lip_box[0]):int(lip_box[1]), int(lip_box[2]):int(lip_box[3]), :]
             lip_center_picture = misc.imresize(lip_center_picture, (224, 224), interp='bilinear')
+            cv2.imshow('lip',lip_center_picture)
+            cv2.waitKey(40)
             self.sync_seq.append(lip_center_picture)
-
             if config.debug:
-                self.raw_seq.append(raw_img)
                 self.bbox_seq.append((boundary_box[0], boundary_box[1], boundary_box[2], boundary_box[3]))
+                self.lip_box_seq.append(lip_box)
 
             self.last_lip_box = lip_box
         else:
@@ -63,14 +66,15 @@ class CV_Tracker:
                        int(max(lip_box[2] + self.delta[1], 0)), int(max(lip_box[3] + self.delta[0], 0))]
             lip_center_picture = raw_img[lip_box[0]:lip_box[1], lip_box[2]:lip_box[3], :]
             lip_center_picture = misc.imresize(lip_center_picture, (224, 224), interp='bilinear')
+            cv2.imshow('lip', lip_center_picture)
+            cv2.waitKey(40)
             self.sync_seq.append(lip_center_picture)
 
             if config.debug:
-                self.raw_seq.append(raw_img)
-                self.bbox_seq.append((boundary_box[0], boundary_box[1], boundary_box[2], boundary_box[3]))
+                self.bbox_seq.append((lip_box[0], lip_box[1], lip_box[2], lip_box[3]))
+                self.lip_box_seq.append(lip_box)
 
             self.last_lip_box = lip_box
-
 
     def update(self, raw_img, shot_count):
         self.tracked, new_bbox = self.tracker.update(raw_img)
