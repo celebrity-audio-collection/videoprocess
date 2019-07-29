@@ -1,6 +1,6 @@
 import os
 
-POI = '蔡康永'
+POI = '白百何'
 
 
 class Config:
@@ -17,8 +17,8 @@ class Config:
     exp_name = os.path.basename(log_dir)
 
     # visual
-    showimg = True
-    debug = True
+    showimg = False
+    debug = False
 
     # RetinaFace
     detect_scale = [360, 640]
@@ -50,7 +50,8 @@ class Config:
     # speaker validation
     # SyncNet
     enable_syncnet = True
-    syncnet_model = r"C:\Users\haoli\PycharmProjects\syncnet_python-master-pytorch\data\syncnet_v2.model"
+    if os.getcwd().find('haoli'):
+        syncnet_model = r"C:\Users\haoli\PycharmProjects\syncnet_python-master-pytorch\data\syncnet_v2.model"
     starting_confidence = 4
     patient_confidence = 3
 
