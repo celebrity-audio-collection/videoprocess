@@ -50,7 +50,8 @@ class Config:
     # speaker validation
     # SyncNet
     enable_syncnet = True
-    syncnet_model = r"C:\Users\haoli\PycharmProjects\syncnet_python-master-pytorch\data\syncnet_v2.model"
+    if os.getcwd().find('haoli'):
+        syncnet_model = r"C:\Users\haoli\PycharmProjects\syncnet_python-master-pytorch\data\syncnet_v2.model"
     starting_confidence = 4
     patient_confidence = 3
 

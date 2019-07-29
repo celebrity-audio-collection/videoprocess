@@ -46,7 +46,7 @@ class CV_Tracker:
     # save lip sequence
     def update_lip_seq(self, raw_img, boundary_box, lip_center=None):
         if lip_center is not None:
-            length = int(max(boundary_box[3] - boundary_box[1], boundary_box[2] - boundary_box[0]) / 2)
+            length = int(min(boundary_box[3] - boundary_box[1], boundary_box[2] - boundary_box[0]) / 2)
             lip_box = [int(max(lip_center[1] - length, 0)), int(lip_center[1] + length),
                        int(max(lip_center[0] - length, 0)), int(lip_center[0] + length)]
             lip_center_picture = raw_img[int(lip_box[0]):int(lip_box[1]), int(lip_box[2]):int(lip_box[3]), :]
