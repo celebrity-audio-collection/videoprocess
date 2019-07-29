@@ -20,7 +20,7 @@ def evaluate_result():
     truelable = truelable[["入点", "出点"]].values
     print(truelable)
     canditates = []
-    with open("testans.txt") as f:
+    with open(os.path.join(os.getcwd(), 'result', POI, POI + '-' + str(config.video_num) + '.txt')) as f:
         a = f.readline()
         while a != "":
             pair = a.split(":")
