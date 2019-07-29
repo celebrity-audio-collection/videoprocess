@@ -63,23 +63,23 @@ if __name__ == '__main__':
     candidates = []
     first_shot = True
     series_id = 0
-    shot_count = 0
+
 
     cap = cv2.VideoCapture(config.video_dir)
     video_fps = cap.get(cv2.CAP_PROP_FPS)
     print("Video FPS:", video_fps)
 
-    start_frame = 2200
+    start_frame = 0
     for i in range(start_frame):
         cap.read()
-
+    shot_count = start_frame - 1
     while True:
         start_time = time.time()
         success, raw_image = cap.read()
         if not success:
             break
 
-        raw_image = cv2.resize(raw_image, (1280, 720))
+        # raw_image = cv2.resize(raw_image, (1280, 720))
         bboxes, landmarks = face_detection_model.update(raw_image)
         new_tracker_list = []
 
