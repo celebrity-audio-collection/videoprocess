@@ -86,6 +86,7 @@ if __name__ == '__main__':
             tracked, bbox = tracker.update(raw_image, shot_count)
             # if target lost, start SyncNet process
             if tracked is False:
+                print("tracking failed")
                 if config.enable_syncnet:
                     print(16000 * tracker.start_shot // video_fps, 16000 * (tracker.end_shot) // video_fps)
                     part_audio = audio[
@@ -101,21 +102,34 @@ if __name__ == '__main__':
                         # exit(-1)
                     offset, confidence, dists_npy = speaker_validation.evaluate(video_fps, tracker.sync_seq, part_audio)
                     if config.debug:
-                        print("Sequence length:", len(tracker.sync_seq[:-config.patience]))
-                        for i in range(len(tracker.raw_seq[:-config.patience])):
-                            img = tracker.raw_seq[i].copy()
-                            box = tracker.bbox_seq[i]
-                            cv2.rectangle(img, (box[0], box[1]), (box[2], box[3]), (255, 0, 0), 2, cv2.LINE_AA)
-                            try:
-                                confidence_caption = 'Conf: %.3f' % (confidence[i])
-                            except:
-                                confidence_caption = 'Conf: exceeded'
-                            cv2.putText(img, confidence_caption, (int(box[0]), int(box[1]) - 10),
-                                        cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
-                            cv2.putText(img, confidence_caption, (int(box[0]), int(box[1]) - 10),
-                                        cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
-                            cv2.imshow('Speaking', img)
-                            cv2.waitKey(40)
+                        print("Sequence length:", len(tracker.sync_seq[:]))
+                        print(len(confidence))
+                        for i in range(len(tracker.raw_seq[:])):
+                            lip_box = tracker.lip_seq[i]
+                            if  i < 6:
+                                img = tracker.raw_seq[i].copy()
+                                box = tracker.bbox_seq[i]
+                                cv2.rectangle(img, (box[0], box[1]), (box[2], box[3]), (255, 0, 0), 2, cv2.LINE_AA)
+                                cv2.rectangle(img, (lip_box[2], lip_box[0]), (lip_box[3], lip_box[1]), (0, 255, 0), 2,
+                                              cv2.LINE_AA)
+                                cv2.imshow('Speaking', img)
+                                cv2.waitKey(40)
+                            else:
+                                img = tracker.raw_seq[i].copy()
+                                box = tracker.bbox_seq[i]
+                                cv2.rectangle(img, (box[0], box[1]), (box[2], box[3]), (255, 0, 0), 2, cv2.LINE_AA)
+                                cv2.rectangle(img, (lip_box[2], lip_box[0]), (lip_box[3], lip_box[1]), (0, 255, 0), 2,
+                                              cv2.LINE_AA)
+                                try:
+                                    confidence_caption = 'Conf: %.3f' % (confidence[i-6])
+                                except:
+                                    confidence_caption = 'Conf: exceeded'
+                                cv2.putText(img, confidence_caption, (int(box[0]), int(box[1]) - 10),
+                                            cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
+                                cv2.putText(img, confidence_caption, (int(box[0]), int(box[1]) - 10),
+                                            cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
+                                cv2.imshow('Speaking', img)
+                                cv2.waitKey(40)
                         cv2.waitKey(0)
                     prelabels = speaker_validation.verification(confidence, tracker.start_shot, predict_results)
                     candidates = candidates + prelabels
@@ -179,9 +193,10 @@ if __name__ == '__main__':
         for tracker in tracker_list:
             if tracker.valid is False:
                 tracker.drop_count += 1
-                # tracker.update_lip_seq(raw_image, boundary, None)
+                tracker.update_lip_seq(raw_image, None, None)
             if tracker.drop():
                 tracker.set_end_shot(shot_count)
+                print("tracker missed the target")
                 if config.enable_syncnet:
                     part_audio = audio[int(16000 // video_fps * tracker.start_shot): int(
                         16000 // video_fps * (tracker.end_shot - config.patience + 1))]
@@ -198,19 +213,31 @@ if __name__ == '__main__':
                     if config.debug:
                         print("Sequence length:", len(tracker.sync_seq[:-config.patience]))
                         for i in range(len(tracker.raw_seq[:-config.patience])):
-                            img = tracker.raw_seq[i].copy()
-                            box = tracker.bbox_seq[i]
-                            cv2.rectangle(img, (box[0], box[1]), (box[2], box[3]), (255, 0, 0), 2, cv2.LINE_AA)
-                            try:
-                                confidence_caption = 'Conf: %.3f' % (confidence[i])
-                            except:
-                                confidence_caption = 'Conf: exceeded'
-                            cv2.putText(img, confidence_caption, (int(box[0]), int(box[1]) - 10),
-                                        cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
-                            cv2.putText(img, confidence_caption, (int(box[0]), int(box[1]) - 10),
-                                        cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
-                            cv2.imshow('Speaking', img)
-                            cv2.waitKey(40)
+                            lip_box = tracker.lip_seq[i]
+                            if i < 6:
+                                img = tracker.raw_seq[i].copy()
+                                box = tracker.bbox_seq[i]
+                                cv2.rectangle(img, (box[0], box[1]), (box[2], box[3]), (255, 0, 0), 2, cv2.LINE_AA)
+                                cv2.rectangle(img, (lip_box[2], lip_box[0]), (lip_box[3], lip_box[1]), (0, 255, 0), 2,
+                                              cv2.LINE_AA)
+                                cv2.imshow('Speaking', img)
+                                cv2.waitKey(40)
+                            else:
+                                img = tracker.raw_seq[i].copy()
+                                box = tracker.bbox_seq[i]
+                                cv2.rectangle(img, (box[0], box[1]), (box[2], box[3]), (255, 0, 0), 2, cv2.LINE_AA)
+                                cv2.rectangle(img, (lip_box[2], lip_box[0]), (lip_box[3], lip_box[1]), (0, 255, 0), 2,
+                                              cv2.LINE_AA)
+                                try:
+                                    confidence_caption = 'Conf: %.3f' % (confidence[i-6])
+                                except:
+                                    confidence_caption = 'Conf: exceeded'
+                                cv2.putText(img, confidence_caption, (int(box[0]), int(box[1]) - 10),
+                                            cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
+                                cv2.putText(img, confidence_caption, (int(box[0]), int(box[1]) - 10),
+                                            cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
+                                cv2.imshow('Speaking', img)
+                                cv2.waitKey(40)
                         cv2.waitKey(0)
                     prelabels = speaker_validation.verification(confidence, tracker.start_shot, predict_results)
                     candidates = candidates + prelabels

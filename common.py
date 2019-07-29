@@ -1,12 +1,12 @@
 import os
 
-POI = '蔡明'
+POI = '白宇'
 
 
 class Config:
     log_dir = './log/log.txt'
 
-    video_num = 2
+    video_num = 1
     video_dir = [os.path.join(os.getcwd(), 'videos', POI, file) for file in
                  os.listdir(os.path.join(os.getcwd(), 'videos', POI))][video_num - 1]
     image_files = [os.path.join(os.getcwd(), 'images', POI, file) for file in
@@ -50,7 +50,7 @@ class Config:
     # speaker validation
     # SyncNet
     enable_syncnet = True
-    syncnet_model = r"C:\Users\haoli\PycharmProjects\syncnet_python-master-pytorch\data\syncnet_v2.model"
+    syncnet_model = "./model/syncnet_v2.model"
     starting_confidence = 4
     patient_confidence = 3
 
