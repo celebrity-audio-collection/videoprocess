@@ -1,6 +1,6 @@
 import os
 
-POI = '蔡康永'
+POI = '白百何'
 
 
 class Config:
@@ -17,8 +17,8 @@ class Config:
     exp_name = os.path.basename(log_dir)
 
     # visual
-    showimg = True
-    debug = True
+    showimg = False
+    debug = False
 
     # RetinaFace
     detect_scale = [360, 640]

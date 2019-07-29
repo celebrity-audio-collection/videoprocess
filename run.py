@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from common import config
+from common import *
 from cv_tracker import CV_Tracker
 from face_detection import FaceDetection
 from face_validation import FaceValidation
@@ -59,23 +59,22 @@ if __name__ == '__main__':
     print("all model loaded")
 
     # result
-    predict_results = open("./testans.txt", "w")
+    predict_results = open(os.path.join(os.getcwd(), 'result', POI, POI + '-' + str(config.video_num) + '.txt'), "w")
 
     tracker_list = []
     candidates = []
     first_shot = True
     series_id = 0
 
-
     cap = cv2.VideoCapture(config.video_dir)
     video_fps = cap.get(cv2.CAP_PROP_FPS)
     print("Video FPS:", video_fps)
 
-    start_frame = 2200
+    start_frame = 570
     for i in range(start_frame):
         cap.read()
 
-    shot_count = start_frame
+    shot_count = start_frame - 1
 
     while True:
         start_time = time.time()
@@ -83,7 +82,6 @@ if __name__ == '__main__':
         if not success:
             break
 
-        raw_image = cv2.resize(raw_image, (1280, 720))
         bboxes, landmarks = face_detection_model.update(raw_image)
         new_tracker_list = []
 

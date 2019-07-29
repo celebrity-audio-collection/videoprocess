@@ -1,4 +1,6 @@
 import pandas as pd
+import os
+from common import *
 
 
 def process_frame(video_fps, stringin):
@@ -13,7 +15,8 @@ def process_frame(video_fps, stringin):
 
 
 def evaluate_result():
-    truelable = pd.read_csv("videos/蔡依林-2.csv", encoding="utf-16-le", sep='\t')
+    truelable = pd.read_csv(os.path.join(os.getcwd(), 'videos', POI, POI + "-" + str(config.video_num) + '.csv'),
+                            encoding="utf-16-le", sep='\t')
     truelable = truelable[["入点", "出点"]].values
     print(truelable)
     canditates = []
