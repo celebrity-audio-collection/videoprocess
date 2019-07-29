@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from common import config
+from common import *
 from cv_tracker import CV_Tracker
 from face_detection import FaceDetection
 from face_validation import FaceValidation
@@ -15,6 +15,7 @@ import subprocess
 import numpy as np
 from scipy.io import wavfile
 import time
+from audio_player import AudioPlayer
 
 if config.use_facenet:
     import tensorflow as tf
@@ -23,6 +24,7 @@ if config.use_facenet:
     gpuconfig = tf.ConfigProto()
     gpuconfig.gpu_options.allow_growth = True
     sess = tf.Session(config=gpuconfig)
+
     KTF.set_session(sess)
 
 
@@ -57,21 +59,26 @@ if __name__ == '__main__':
     print("all model loaded")
 
     # result
-    predict_results = open("./testans.txt", "w")
+    predict_results = open(os.path.join(os.getcwd(), 'result', POI, POI + '-' + str(config.video_num) + '.txt'), "w")
 
     tracker_list = []
     candidates = []
     first_shot = True
     series_id = 0
-    shot_count = 0
+
+
 
     cap = cv2.VideoCapture(config.video_dir)
     video_fps = cap.get(cv2.CAP_PROP_FPS)
     print("Video FPS:", video_fps)
 
-    start_frame = 2200
+
+    start_frame = 570
     for i in range(start_frame):
         cap.read()
+
+    shot_count = start_frame - 1
+
 
     while True:
         start_time = time.time()
@@ -79,7 +86,7 @@ if __name__ == '__main__':
         if not success:
             break
 
-        raw_image = cv2.resize(raw_image, (1280, 720))
+
         bboxes, landmarks = face_detection_model.update(raw_image)
         new_tracker_list = []
 
@@ -102,12 +109,15 @@ if __name__ == '__main__':
                         print(len(tracker.sync_seq))
                         print(len(part_audio))
                         # exit(-1)
+                    wavfile.write('temp/segment.wav', 16000, part_audio)
+                    player = AudioPlayer('temp/segment.wav')
                     offset, confidence, dists_npy = speaker_validation.evaluate(video_fps, tracker.sync_seq, part_audio)
                     if config.debug:
 
                         print("Sequence length:", len(tracker.sync_seq))
                         debug_cap = cv2.VideoCapture(config.video_dir)
-                        debug_cap.set(1, start_frame + tracker.start_shot)
+                        debug_cap.set(1, tracker.start_shot)
+                        player.play()
                         for i in range(len(tracker.sync_seq)):
                             if i < 6:
                                 __, img = debug_cap.read()
@@ -122,8 +132,8 @@ if __name__ == '__main__':
                                     clr = int(max(min(confidence[i - 6] * 30, 255), 0))
                                     cv2.rectangle(img, (box[0], box[1]), (box[2], box[3]), (0, clr, 255 - clr), 2,
                                                   cv2.LINE_AA)
-                                    cv2.rectangle(img, (lip_box[0], lip_box[2]), (lip_box[1], lip_box[3]), (255, 0, 0), 2,
-                                                  cv2.LINE_AA)
+                                    cv2.rectangle(img, (lip_box[2], lip_box[0]), (lip_box[3], lip_box[1]), (255, 0, 0),
+                                                  2, cv2.LINE_AA)
                                 except:
                                     confidence_caption = 'Conf: exceeded'
                                     cv2.rectangle(img, (box[0], box[1]), (box[2], box[3]), (0, 0, 255), 2,
@@ -151,7 +161,6 @@ if __name__ == '__main__':
                 caption = "Yes"
                 tracking = isTracking((center[1], center[0]), tracker_list)
                 lip_center = np.mean(landmark[3:], axis=0)
-                lip_center = [lip_center[1], lip_center[0]]
                 # new target
                 if not tracking:
                     series_id += 1
@@ -205,6 +214,7 @@ if __name__ == '__main__':
                 if config.enable_syncnet:
                     part_audio = audio[int(16000 // video_fps * tracker.start_shot): int(
                         16000 // video_fps * (tracker.end_shot - config.patience + 1))]
+
                     if len(part_audio) != len(tracker.sync_seq[:-config.patience]) * 16000 // video_fps:
                         print("fatal: video and audio does not match")
                         print("startshot", tracker.start_shot)
@@ -212,14 +222,18 @@ if __name__ == '__main__':
                         print(len(tracker.sync_seq))
                         print(len(part_audio))
                         # exit(-2)
+                    wavfile.write('temp/segment.wav', 16000, part_audio)
+                    player = AudioPlayer('temp/segment.wav')
                     offset, confidence, dists_npy = speaker_validation.evaluate(video_fps,
                                                                                 tracker.sync_seq[:-config.patience],
                                                                                 part_audio)
+
                     if config.debug:
                         print("Sequence length:", len(tracker.sync_seq[:-config.patience]))
 
                         debug_cap = cv2.VideoCapture(config.video_dir)
-                        debug_cap.set(1, start_frame + tracker.start_shot)
+                        debug_cap.set(1, tracker.start_shot)
+                        player.play()
                         for i in range(len(tracker.sync_seq) - config.patience):
                             if i < 6:
                                 __, img = debug_cap.read()
@@ -234,8 +248,8 @@ if __name__ == '__main__':
                                     clr = int(max(min(confidence[i - 6] * 30, 255), 0))
                                     cv2.rectangle(img, (box[0], box[1]), (box[2], box[3]), (0, clr, 255 - clr), 2,
                                                   cv2.LINE_AA)
-                                    cv2.rectangle(img, (lip_box[0], lip_box[2]), (lip_box[1], lip_box[3]), (255, 0, 0), 2,
-                                                  cv2.LINE_AA)
+                                    cv2.rectangle(img, (lip_box[2], lip_box[0]), (lip_box[3], lip_box[1]), (255, 0, 0),
+                                                  2, cv2.LINE_AA)
                                 except:
                                     confidence_caption = 'Conf: exceeded'
                                     cv2.rectangle(img, (box[0], box[1]), (box[2], box[3]), (0, 0, 255), 2,
