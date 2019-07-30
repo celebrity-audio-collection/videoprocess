@@ -22,7 +22,6 @@ class Config:
     showimg = True
     debug = False
 
-
     # RetinaFace
     detect_scale = [360, 640]
     retinaface_model = 'model/retinaface_model/mnet.25/mnet.25'

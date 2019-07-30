@@ -16,6 +16,7 @@ import gc
 import numpy as np
 from scipy.io import wavfile
 import time
+
 if config.debug:
     from audio_player import AudioPlayer
 
@@ -43,17 +44,18 @@ def load_models():
 
     # load face validation model
     print("loading face validation model")
-    Facevalidation_model = FaceValidation()
-
+    face_validation_model = FaceValidation()
 
     # SyncNet
     print("loading speaker validation model")
     speaker_validation = SpeakerValidation()
-    return face_detection_model, Facevalidation_model, speaker_validation
+    return face_detection_model, face_validation_model, speaker_validation
 
-def process_singel_vedio(vedio_dir, output_dir, face_detection_model, facevalidation_model, speaker_validation):
+
+def process_single_video(video_dir, output_dir, face_detection_model, face_validation_model, speaker_validation):
     audio_tmp = './temp/audio.wav'
-    command = ("ffmpeg -y -i %s -async 1 -ac 1 -vn -acodec pcm_s16le -ar 16000 %s > %s 2>&1" % (vedio_dir, audio_tmp, os.path.join(config.log_dir,"ffmpeg.log")))
+    command = ("ffmpeg -y -i %s -async 1 -ac 1 -vn -acodec pcm_s16le -ar 16000 %s > %s 2>&1" % (
+        video_dir, audio_tmp, os.path.join(config.log_dir, "ffmpeg.log")))
     output = subprocess.call(command, shell=True, stdout=None)
     sample_rate, audio = wavfile.read(audio_tmp)
     # result
@@ -64,7 +66,7 @@ def process_singel_vedio(vedio_dir, output_dir, face_detection_model, facevalida
     candidates = []
     series_id = 0
 
-    cap = cv2.VideoCapture(vedio_dir)
+    cap = cv2.VideoCapture(video_dir)
     video_fps = cap.get(cv2.CAP_PROP_FPS)
     assert video_fps == 25
     print("Video FPS:", video_fps)
@@ -154,7 +156,7 @@ def process_singel_vedio(vedio_dir, output_dir, face_detection_model, facevalida
         for boundary, landmark in zip(bboxes, landmarks):
             boundary = boundary.astype(np.int)
             center = [int((boundary[1] + boundary[3]) / 2), int((boundary[0] + boundary[2]) / 2)]
-            validation = facevalidation_model.confirm_validity(raw_image, boundary=boundary, landmark=landmark)
+            validation = face_validation_model.confirm_validity(raw_image, boundary=boundary, landmark=landmark)
 
             if validation:
                 caption = "Yes"
@@ -268,7 +270,7 @@ def process_singel_vedio(vedio_dir, output_dir, face_detection_model, facevalida
                 new_tracker_list.append(tracker)
         tracker_list = new_tracker_list
 
-        if shot_count %1000 == 0 and shot_count !=0:
+        if shot_count % 1000 == 0 and shot_count != 0:
             print('Shot {:d}, FPS {:.2f} '.format(shot_count, 1000 / (time.time() - start_time)), end='\n')
             start_time = time.time()
         if config.showimg:
@@ -281,13 +283,14 @@ def process_singel_vedio(vedio_dir, output_dir, face_detection_model, facevalida
     predict_results.close()
     # evaluate
     if config.enable_evaluation:
-        index = vedio_dir.rfind('.')
-        evaluate_result(vedio_dir[:index]+".csv", output_dir)
+        index = video_dir.rfind('.')
+        evaluate_result(video_dir[:index] + ".csv", output_dir)
+
 
 if __name__ == '__main__':
 
     # global init
-    face_detection_model,  facevalidation_model, speaker_validation = load_models()
+    face_detection_model, face_validation_model, speaker_validation = load_models()
     print("all model loaded")
     #
     if not os.path.exists(config.video_base_dir):
@@ -299,24 +302,24 @@ if __name__ == '__main__':
     if not os.path.exists(config.log_dir):
         os.makedirs(config.log_dir)
     if not os.path.exists(config.output_dir):
-        os.makedirs(config.log_dir)
+        os.makedirs(config.output_dir)
 
-
-    POIS = os.listdir(config.video_dir)
+    POIS = os.listdir(config.video_base_dir)
     for POI in POIS:
         print("current POI: {}".format(POI))
-        if not os.path.exists((os.path.join(config.image_base_dir,POI))):
+        if not os.path.exists((os.path.join(config.image_base_dir, POI))):
             print("image of {} is not exist".format(POI))
             continue
-        POI_imgs = [os.path.join(config.image_base_dir,POI, pic) for pic in os.listdir(os.path.join(config.image_base_dir,POI))]
-        POI_categories = os.listdir(os.path.join(config.video_base_dir,POI))
+        POI_imgs = [os.path.join(config.image_base_dir, POI, pic) for pic in
+                    os.listdir(os.path.join(config.image_base_dir, POI))]
+        POI_categories = os.listdir(os.path.join(config.video_base_dir, POI))
 
-        facevalidation_model.update_POI(POI_imgs)
+        face_validation_model.update_POI(POI_imgs)
         print("POI images updated")
 
-        #遍历文件下所有文件
+        # 遍历文件下所有文件
         for category in POI_categories:
-            category_video = os.path.join(config.video_base_dir,POI,category)
+            category_video = os.path.join(config.video_base_dir, POI, category)
             for root, dirs, files in os.walk(category_video):
                 for file in files:
                     if file.find('.csv') > 0:
@@ -326,15 +329,11 @@ if __name__ == '__main__':
                     if not os.path.exists(category_output):
                         os.makedirs(category_output)
                     single_video_dir = os.path.join(root, file)
-                    single_output_dir = os.path.join(category_output, file[:index]+'.txt')
-                    print("Processing vedio: {}".format(single_video_dir))
+                    single_output_dir = os.path.join(category_output, file[:index] + '.txt')
+                    print("Processing video: {}".format(single_video_dir))
                     try:
-                        process_singel_vedio(single_video_dir, single_output_dir, face_detection_model,  facevalidation_model, speaker_validation)
+                        process_single_video(single_video_dir, single_output_dir, face_detection_model,
+                                             face_validation_model, speaker_validation)
                     except AssertionError:
                         print("FPS of {} is not 25.".format(single_video_dir))
                     gc.collect()
-
-
-
-
-
