@@ -1,24 +1,27 @@
 import os
 
-POI = '白百何'
-
 
 class Config:
-    log_dir = './log/log.txt'
+    log_dir = './log'
+    temp_dir = './temp'
+    output_dir = './result'
 
     video_num = 1
-    video_dir = [os.path.join(os.getcwd(), 'videos', POI, file) for file in
-                 os.listdir(os.path.join(os.getcwd(), 'videos', POI))][video_num - 1]
-    image_files = [os.path.join(os.getcwd(), 'images', POI, file) for file in
-                   os.listdir(os.path.join(os.getcwd(), 'images', POI))]
+    # video_dir = [os.path.join(os.getcwd(), 'videos', POI, file) for file in
+    #              os.listdir(os.path.join(os.getcwd(), 'videos', POI))][video_num - 1]
+    video_base_dir = "./videos"
+    image_base_dir = "./images"
+    # image_files = [os.path.join(os.getcwd(), 'images', POI, file) for file in
+    #                os.listdir(os.path.join(os.getcwd(), 'images', POI))]
 
     landmark_predictor = "model/dlib/shape_predictor_68_face_landmarks.dat"
 
     exp_name = os.path.basename(log_dir)
 
     # visual
-    showimg = False
+    showimg = True
     debug = False
+
 
     # RetinaFace
     detect_scale = [360, 640]
@@ -50,8 +53,9 @@ class Config:
     # speaker validation
     # SyncNet
     enable_syncnet = True
-    if os.getcwd().find('haoli'):
-        syncnet_model = r"C:\Users\haoli\PycharmProjects\syncnet_python-master-pytorch\data\syncnet_v2.model"
+
+    syncnet_model = "./model/syncnet_v2.model"
+
     starting_confidence = 4
     patient_confidence = 3
 

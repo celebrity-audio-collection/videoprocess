@@ -36,6 +36,7 @@ class CV_Tracker:
 
         # self.raw_seq = []
         self.bbox_seq = []
+
         self.lip_box_seq = []
 
         self.last_lip_box = None
@@ -51,8 +52,10 @@ class CV_Tracker:
                        int(max(lip_center[0] - length, 0)), int(lip_center[0] + length)]
             lip_center_picture = raw_img[int(lip_box[0]):int(lip_box[1]), int(lip_box[2]):int(lip_box[3]), :]
             lip_center_picture = misc.imresize(lip_center_picture, (224, 224), interp='bilinear')
+            if config.debug:
+                cv2.imshow('lip',lip_center_picture)
+                cv2.waitKey(40)
             self.sync_seq.append(lip_center_picture)
-
             if config.debug:
                 self.bbox_seq.append((boundary_box[0], boundary_box[1], boundary_box[2], boundary_box[3]))
                 self.lip_box_seq.append(lip_box)
@@ -64,12 +67,14 @@ class CV_Tracker:
                        int(max(lip_box[2] + self.delta[1], 0)), int(max(lip_box[3] + self.delta[0], 0))]
             lip_center_picture = raw_img[lip_box[0]:lip_box[1], lip_box[2]:lip_box[3], :]
             lip_center_picture = misc.imresize(lip_center_picture, (224, 224), interp='bilinear')
+            if config.debug:
+                cv2.imshow('lip', lip_center_picture)
+                cv2.waitKey(40)
             self.sync_seq.append(lip_center_picture)
 
             if config.debug:
                 self.bbox_seq.append((lip_box[0], lip_box[1], lip_box[2], lip_box[3]))
                 self.lip_box_seq.append(lip_box)
-
 
             self.last_lip_box = lip_box
 
