@@ -20,8 +20,9 @@ class Config:
     exp_name = os.path.basename(log_dir)
 
     # visual
-    showimg = False
+    showimg = True
     debug = False
+
 
     # RetinaFace
     detect_scale = [360, 640]
