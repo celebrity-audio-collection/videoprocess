@@ -276,6 +276,7 @@ if __name__ == '__main__':
         if cv2.waitKey(10) == 27:
             break
 
+    predict_results.close()
     # evaluate
     if config.enable_evaluation:
         evaluate_result()
