@@ -151,7 +151,8 @@ class FaceValidation:
                 dist_list.append(dist)
                 avg += dist
             value = avg / (len(self.labelembds))
-            print("dist_avg: {:.3f}".format(value))
+            if config.debug:
+                print("dist_avg: {:.3f}".format(value))
             # print("average distance:", value, 'dist:', dist_list, end=' ')
             if value < config.dist_threshold:
                 return True
