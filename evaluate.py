@@ -3,34 +3,41 @@ import os
 from common import *
 
 
-def process_frame(video_fps, stringin):
+def process_frame(stringin):
     strcrop = stringin.split(":")
     frame = 0
     frame += int(strcrop[0]) * 25 * 60 * 60
     frame += int(strcrop[1]) * 25 * 60
     frame += int(strcrop[2]) * 25
     frame += int(strcrop[3])
-    frame = int(frame * video_fps / 25.0)
     return frame
 
+def evaluate_result(labelfile, resultfile):
+    try:
+        # truelable = pd.read_csv(os.path.join(os.getcwd(), 'videos', POI, POI + "-" + str(config.video_num) + '.csv'),
+        #                         encoding="utf-16-le", sep='\t')
+        truelable = pd.read_csv(labelfile,encoding="utf-16-le", sep='\t')
+        truelable = truelable[["入点", "出点"]].values
+        print(truelable)
+    except Exception:
+        print("Evaluation: the labels file is not exist.")
+        return -1, -1
 
-def evaluate_result():
-    truelable = pd.read_csv(os.path.join(os.getcwd(), 'videos', POI, POI + "-" + str(config.video_num) + '.csv'),
-                            encoding="utf-16-le", sep='\t')
-    truelable = truelable[["入点", "出点"]].values
-    print(truelable)
-    canditates = []
-    with open(os.path.join(os.getcwd(), 'result', POI, POI + '-' + str(config.video_num) + '.txt')) as f:
-        a = f.readline()
-        while a != "":
-            pair = a.split(":")
-            canditates.append([int(pair[0]), int(pair[1])])
+    try:
+        canditates = []
+        with open(resultfile) as f:
             a = f.readline()
-
+            while a != "":
+                pair = a.split(":")
+                canditates.append([int(pair[0]), int(pair[1])])
+                a = f.readline()
+    except Exception:
+        print("Evaluation: the result file is not exist.")
+        return -1, -1
     print(canditates)
     for row_index in range(len(truelable)):
         for col_index in range(len(truelable[row_index])):
-            truelable[row_index][col_index] = process_frame(25, truelable[row_index][col_index])
+            truelable[row_index][col_index] = process_frame(truelable[row_index][col_index])
     print(truelable)
     missed = 0
     total = 0
@@ -51,13 +58,18 @@ def evaluate_result():
     # print("total valid  frames: ", len(valset))
     # print("total predictions  frames: ", len(preset))
     # print("total missed  frames: ", len(preset - valset))
-    # print("miss rate: ",missed)
-    FPR = len(preset - valset) / len(preset)
-    recall = len(preset & valset) / len(valset)
-    print("total valid  frames: ", total)
-    print("total missed  frames: ", missed)
-    print("FPR: ", FPR)
-    print("Recall: ", recall)
+    # print("miss rate: ",missed)]
+    try:
+        FPR = len(preset - valset) / len(preset)
+        recall = len(preset & valset) / len(valset)
+        print("total valid  frames: ", total)
+        print("total missed  frames: ", missed)
+        print("FPR: ", FPR)
+        print("Recall: ", recall)
+    except Exception:
+        print("Evaluation: divide zero")
+        return  -1, -1
+    return FPR, recall
 
 
 if __name__ == '__main__':
