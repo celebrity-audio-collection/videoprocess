@@ -146,14 +146,12 @@ class FaceValidation:
             avg = 0
             dist_list = []
             for i in range(len(self.labelembds)):
-                # cosdist = self.findCosineDistance(self.labelembds[i],embedding)
                 dist = self.cal_distance(embedding, self.labelembds[i])
                 dist_list.append(dist)
                 avg += dist
             value = avg / (len(self.labelembds))
             if config.debug:
                 print("dist_avg: {:.3f}".format(value))
-            # print("average distance:", value, 'dist:', dist_list, end=' ')
             if value < config.dist_threshold:
                 return True
             else:
