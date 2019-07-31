@@ -12,15 +12,16 @@ def process_frame(stringin):
     frame += int(strcrop[3])
     return frame
 
+
 def evaluate_result(labelfile, resultfile):
     try:
         # truelable = pd.read_csv(os.path.join(os.getcwd(), 'videos', POI, POI + "-" + str(config.video_num) + '.csv'),
         #                         encoding="utf-16-le", sep='\t')
-        truelable = pd.read_csv(labelfile,encoding="utf-16-le", sep='\t')
+        truelable = pd.read_csv(labelfile, encoding="utf-16-le", sep='\t')
         truelable = truelable[["入点", "出点"]].values
         print(truelable)
     except Exception:
-        print("Evaluation: the labels file is not exist.")
+        print("Evaluation: the labels file does not exist.")
         return -1, -1
 
     try:
@@ -32,7 +33,7 @@ def evaluate_result(labelfile, resultfile):
                 canditates.append([int(pair[0]), int(pair[1])])
                 a = f.readline()
     except Exception:
-        print("Evaluation: the result file is not exist.")
+        print("Evaluation: the result file does not exist.")
         return -1, -1
     # print(canditates)
     for row_index in range(len(truelable)):
@@ -68,7 +69,7 @@ def evaluate_result(labelfile, resultfile):
         print("Recall: ", recall)
     except Exception:
         print("Evaluation: divide zero")
-        return  -1, -1
+        return -1, -1
     return FPR, recall
 
 

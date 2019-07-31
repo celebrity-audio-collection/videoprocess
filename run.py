@@ -51,13 +51,14 @@ def load_models():
     return face_detection_model, face_validation_model, speaker_validation
 
 
-def process_single_video(video_dir, output_dir, face_detection_model, face_validation_model, speaker_validation):
+def process_single_video(video_dir, output_dir, face_detection_model, face_validation_model, speaker_validation, output_video_dir=None):
     audio_tmp = './temp/audio.wav'
     command = ("ffmpeg -y -i %s -async 1 -ac 1 -vn -acodec pcm_s16le -ar 16000 %s > %s 2>&1" % (
         video_dir, audio_tmp, os.path.join(config.log_dir, "ffmpeg.log")))
     output = subprocess.call(command, shell=True, stdout=None)
     sample_rate, audio = wavfile.read(audio_tmp)
     print(audio.shape)
+
     # result
     predict_results = open(output_dir, "w")
     # predict_results = open(os.path.join(os.getcwd(), 'result', POI, POI + '-' + str(config.video_num) + '.txt'), "w")
@@ -73,7 +74,7 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
     print("Video FPS:", video_fps)
 
     if config.write_video:
-        videoWriter = cv2.VideoWriter(os.path.join(output_dir, 'song.avi'),
+        videoWriter = cv2.VideoWriter(os.path.join(output_video_dir, 'song.avi'),
                                       cv2.VideoWriter_fourcc(*'XVID'), video_fps, (1280, 720))
 
     if cap.get(cv2.CAP_PROP_FRAME_WIDTH) > 1280:

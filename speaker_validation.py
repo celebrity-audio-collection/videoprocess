@@ -9,6 +9,15 @@ class SpeakerValidation:
         self.model = SyncNetInstance.SyncNetInstance()
         self.model.loadParameters(config.syncnet_model)
 
+    def form_convert(self, frame_id):
+        h = int(frame_id / 90000)
+        rest = frame_id % 90000
+        m = int(rest / 1500)
+        rest = rest % 1500
+        s = int(rest / 25)
+        lf = rest % 25
+        return "{:d}:{:d}:{:d}:{:d}".format(h, m, s, lf)
+
     def evaluate(self, video_fps, image_seq, audio_seq):
         if len(image_seq) <= 6:
             return None, np.array([0]), None
@@ -28,5 +37,5 @@ class SpeakerValidation:
                 processed = index
                 slice_end = start_shot + index + 6
                 candidates.append((slice_start, slice_end))
-                logfile.writelines([str(slice_start) + ":" + str(slice_end) + "\n"])
+                logfile.writelines([self.form_convert(slice_start) + "\t" + self.form_convert(slice_end) + "\n"])
         return candidates
