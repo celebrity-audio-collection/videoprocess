@@ -32,7 +32,7 @@ def view_result(video_path, result):
                 break
             cv2.imshow('Result', raw_image)
             shot_count += 1
-            cv2.waitKey(40)
+            cv2.waitKey(20)
 
 
 if __name__ == '__main__':

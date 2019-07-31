@@ -6,21 +6,20 @@ class Config:
     temp_dir = './temp'
     output_dir = './result'
 
-    video_num = 1
-    # video_dir = [os.path.join(os.getcwd(), 'videos', POI, file) for file in
-    #              os.listdir(os.path.join(os.getcwd(), 'videos', POI))][video_num - 1]
     video_base_dir = "./videos"
     image_base_dir = "./images"
+    # video_num = 1
+    # video_dir = [os.path.join(os.getcwd(), 'videos', POI, file) for file in
+    #              os.listdir(os.path.join(os.getcwd(), 'videos', POI))][video_num - 1]
     # image_files = [os.path.join(os.getcwd(), 'images', POI, file) for file in
     #                os.listdir(os.path.join(os.getcwd(), 'images', POI))]
 
     landmark_predictor = "model/dlib/shape_predictor_68_face_landmarks.dat"
 
-    exp_name = os.path.basename(log_dir)
-
     # visual
     showimg = False
     debug = False
+    write_video = False
 
     # RetinaFace
     detect_scale = [360, 640]

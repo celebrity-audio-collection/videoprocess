@@ -47,6 +47,7 @@ class FaceValidation:
         self.labelembds = []
 
     def update_POI(self, imgdir_list):
+        self.labelembds = []
         if config.use_insightface:
             tmp_image_paths = copy.copy(imgdir_list)
             features = []
@@ -55,8 +56,7 @@ class FaceValidation:
                 img1 = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
                 img1 = self.valmodel.get_input(img1)
                 features.append(self.valmodel.get_feature(img1).reshape(1, -1))
-            self.labelembds += features
-            # print(self.labelembds)
+            self.labelembds = features
         elif config.use_facenet:
             self.image_list = self.load_and_align_data(imgdir_list, config.validation_imagesize, config.margin)
             self.labelembds = self.compute_embedings(self.image_list)
