@@ -37,5 +37,6 @@ class SpeakerValidation:
                 processed = index
                 slice_end = start_shot + index + 6
                 candidates.append((slice_start, slice_end))
-                logfile.writelines([self.form_convert(slice_start) + "\t" + self.form_convert(slice_end) + "\n"])
+                slice_length = slice_end - slice_start
+                logfile.writelines([self.form_convert(slice_start) + "\t" + self.form_convert(slice_length) + "\n"])
         return candidates

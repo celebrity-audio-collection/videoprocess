@@ -4,7 +4,7 @@ import os
 class Config:
     log_dir = './log'
     temp_dir = './temp'
-    output_dir = './result'
+    output_dir = './videos'
 
     video_base_dir = "./videos"
     image_base_dir = "./images"

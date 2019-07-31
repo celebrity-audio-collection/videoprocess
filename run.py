@@ -368,7 +368,7 @@ if __name__ == '__main__':
             category_video = os.path.join(config.video_base_dir, POI, category)
             for root, dirs, files in os.walk(category_video):
                 for file in files:
-                    if file.find('.csv') > 0:
+                    if file.find('.csv') > 0 or file.find('.txt') > 0:
                         continue
                     index = file.rfind('.')
                     category_output = root.replace(config.video_base_dir, config.output_dir)
