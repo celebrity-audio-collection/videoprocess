@@ -26,11 +26,11 @@ class SpeakerValidation:
             if index <= processed:
                 continue
             if confidence[index] >= config.starting_confidence:
-                start_shot = start_shot + index
+                slice_start = start_shot + index
                 while index < confidence.shape[0] and confidence[index] >= config.patient_confidence:
                     index += 1
                 processed = index
-                end_shot = start_shot + index + 6
-                candidates.append((start_shot, end_shot))
-                logfile.writelines([str(start_shot) + ":" + str(end_shot) + "\n"])
+                slice_end = start_shot + index + 6
+                candidates.append((slice_start, slice_end))
+                logfile.writelines([str(slice_start) + ":" + str(slice_end) + "\n"])
         return candidates
