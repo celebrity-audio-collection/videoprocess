@@ -9,17 +9,13 @@ class SpeakerValidation:
         self.model = SyncNetInstance.SyncNetInstance()
         self.model.loadParameters(config.syncnet_model)
 
-    def evaluate(self, video_fps, imageseq, audioseq):
-        if len(imageseq) <= 6:
+    def evaluate(self, video_fps, image_seq, audio_seq):
+        if len(image_seq) <= 6:
             return None, np.array([0]), None
-        offset, confidence, dists_npy = self.model.evaluate_part(video_fps, imageseq, audioseq)
-        # if len(imageseq) != len (confidence):
-        #     print(len(imageseq),len (confidence))
-        #     exit(10)
+        offset, confidence, dists_npy = self.model.evaluate_part(video_fps, image_seq, audio_seq)
         return offset, confidence, dists_npy
 
     def verification(self, confidence, start_shot, logfile):
-        # print(confidence)
         candidates = []
         processed = -1
         for index in range(0, confidence.shape[0]):

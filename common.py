@@ -6,7 +6,7 @@ class Config:
     temp_dir = './temp'
     output_dir = './result'
 
-    video_num = 1
+    # video_num = 1
     # video_dir = [os.path.join(os.getcwd(), 'videos', POI, file) for file in
     #              os.listdir(os.path.join(os.getcwd(), 'videos', POI))][video_num - 1]
     video_base_dir = "./videos"
@@ -21,6 +21,7 @@ class Config:
     # visual
     showimg = False
     debug = False
+    write_video = False
 
     # RetinaFace
     detect_scale = [360, 640]

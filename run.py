@@ -27,7 +27,6 @@ if config.use_facenet:
     gpuconfig = tf.ConfigProto()
     gpuconfig.gpu_options.allow_growth = True
     sess = tf.Session(config=gpuconfig)
-
     KTF.set_session(sess)
 
 
@@ -68,25 +67,29 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
     series_id = 0
 
     cap = cv2.VideoCapture(video_dir)
-    if cap.get(3) > 1280:
+    video_fps = cap.get(cv2.CAP_PROP_FPS)
+    if config.enable_syncnet:
+        assert video_fps == 25
+    print("Video FPS:", video_fps)
+
+    if config.write_video:
+        videoWriter = cv2.VideoWriter(os.path.join(output_dir, 'song.avi'),
+                                      cv2.VideoWriter_fourcc(*'XVID'), video_fps, (1280, 720))
+
+    if cap.get(cv2.CAP_PROP_FRAME_WIDTH) > 1280:
         need_to_resize = True
     else:
         need_to_resize = False
-    # _ = cap.
-    video_fps = cap.get(cv2.CAP_PROP_FPS)
-    assert video_fps == 25
-    print("Video FPS:", video_fps)
 
-    start_frame = 500
-    cap.set(1, start_frame)
-    shot_count = start_frame - 1
+    # start_frame = 0
+    # cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
+    # shot_count = start_frame - 1
 
-    # shot_count = 0
+    shot_count = 0
 
     print("start process")
     start_time = time.time()
     while True:
-
         if need_to_resize:
             success, raw_image = cap.read()
             if not success:
@@ -257,7 +260,8 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
                                                                                 tracker.sync_seq[:-config.patience],
                                                                                 part_audio)
                     silent_audio = np.zeros(part_audio.shape, dtype=audio.dtype)
-                    __, conf_silent, __ = speaker_validation.evaluate(video_fps, tracker.sync_seq[:-config.patience], silent_audio)
+                    __, conf_silent, __ = speaker_validation.evaluate(video_fps, tracker.sync_seq[:-config.patience],
+                                                                      silent_audio)
                     # print(conf_silent)
                     confidence[conf_silent > 3] = 0
                     # confidence = conf_silent
@@ -314,6 +318,8 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
             start_time = time.time()
         if config.showimg:
             cv2.imshow('Video', raw_image)
+        if config.write_video:
+            videoWriter.write(raw_image)
         shot_count += 1
 
         if cv2.waitKey(10) == 27:

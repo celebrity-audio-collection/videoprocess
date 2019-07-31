@@ -34,9 +34,7 @@ class CV_Tracker:
         self.delta = (0, 0)
         self.sync_seq = []
 
-        # self.raw_seq = []
         self.bbox_seq = []
-
         self.lip_box_seq = []
 
         self.last_lip_box = None
@@ -53,10 +51,11 @@ class CV_Tracker:
                        int(max(lip_center[0] - length, 0)), int(lip_center[0] + length)]
             lip_center_picture_raw = raw_img[int(lip_box[0]):int(lip_box[1]), int(lip_box[2]):int(lip_box[3]), :]
             try:
-                lip_center_picture = misc.imresize(lip_center_picture_raw, (224, 224), interp='bilinear')
+                lip_center_picture = cv2.resize(lip_center_picture_raw, (224, 224))
             except Exception:
                 print("Tracker: misc resize error")
                 print(lip_box)
+                print(length)
                 print(lip_center_picture_raw)
                 exit(-1)
             if config.debug:
@@ -70,14 +69,15 @@ class CV_Tracker:
             self.last_lip_box = lip_box
         else:
             lip_box = self.last_lip_box
-            lip_box = [int(max(lip_box[0] + self.delta[1], 0)), int(max(lip_box[1] + self.delta[0], 0)),
-                       int(max(lip_box[2] + self.delta[1], 0)), int(max(lip_box[3] + self.delta[0], 0))]
+            lip_box = [int(max(lip_box[0] + self.delta[1], 0)), int(max(lip_box[1] + self.delta[1], 0)),
+                       int(max(lip_box[2] + self.delta[0], 0)), int(max(lip_box[3] + self.delta[0], 0))]
             lip_center_picture_raw = raw_img[lip_box[0]:lip_box[1], lip_box[2]:lip_box[3], :]
             try:
-                lip_center_picture = misc.imresize(lip_center_picture_raw, (224, 224), interp='bilinear')
+                lip_center_picture = cv2.resize(lip_center_picture_raw, (224, 224))
             except Exception:
                 print("Tracker: misc resize error")
                 print(lip_box)
+                print(self.delta)
                 print(lip_center_picture_raw)
                 exit(-1)
             if config.debug:
