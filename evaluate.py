@@ -29,8 +29,11 @@ def evaluate_result(labelfile, resultfile):
         with open(resultfile) as f:
             a = f.readline()
             while a != "":
-                pair = a.split(":")
-                canditates.append([int(pair[0]), int(pair[1])])
+                pair = a.split("\t")
+                slice_start = process_frame(pair[0])
+                slice_end = slice_start + process_frame(pair[1])
+                canditates.append([slice_start, slice_end])
+                # canditates.append([int(pair[0]), int(pair[1])])
                 a = f.readline()
     except Exception:
         print("Evaluation: the result file does not exist.")

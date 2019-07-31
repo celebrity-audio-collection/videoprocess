@@ -16,7 +16,7 @@ class SpeakerValidation:
         rest = rest % 1500
         s = int(rest / 25)
         lf = rest % 25
-        return "{:d}:{:d}:{:d}:{:d}".format(h, m, s, lf)
+        return "{:0>2d}:{:0>2d}:{:0>2d}:{:0>2d}".format(h, m, s, lf)
 
     def evaluate(self, video_fps, image_seq, audio_seq):
         if len(image_seq) <= 6:
