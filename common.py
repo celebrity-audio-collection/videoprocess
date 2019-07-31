@@ -19,7 +19,7 @@ class Config:
     exp_name = os.path.basename(log_dir)
 
     # visual
-    showimg = True
+    showimg = False
     debug = False
 
     # RetinaFace

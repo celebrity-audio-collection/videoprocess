@@ -58,6 +58,7 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
         video_dir, audio_tmp, os.path.join(config.log_dir, "ffmpeg.log")))
     output = subprocess.call(command, shell=True, stdout=None)
     sample_rate, audio = wavfile.read(audio_tmp)
+    print(audio.shape)
     # result
     predict_results = open(output_dir, "w")
     # predict_results = open(os.path.join(os.getcwd(), 'result', POI, POI + '-' + str(config.video_num) + '.txt'), "w")
@@ -67,21 +68,32 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
     series_id = 0
 
     cap = cv2.VideoCapture(video_dir)
+    if cap.get(3) > 1280:
+        need_to_resize = True
+    else:
+        need_to_resize = False
+    # _ = cap.
     video_fps = cap.get(cv2.CAP_PROP_FPS)
     assert video_fps == 25
     print("Video FPS:", video_fps)
 
-    # start_frame = 570
-    # for i in range(start_frame):
-    #     cap.read()
-    #
-    # shot_count = start_frame - 1
-    shot_count = 0
+    start_frame = 500
+    cap.set(1, start_frame)
+    shot_count = start_frame - 1
+
+    # shot_count = 0
+
     print("start process")
     start_time = time.time()
     while True:
 
-        success, raw_image = cap.read()
+        if need_to_resize:
+            success, raw_image = cap.read()
+            if not success:
+                break
+            raw_image = cv2.resize(raw_image, (1280, 720))
+        else:
+            success, raw_image = cap.read()
         if not success:
             break
 
@@ -112,20 +124,34 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
                     if config.debug:
                         wavfile.write('temp/segment.wav', 16000, part_audio)
                         player = AudioPlayer('temp/segment.wav')
+
                     offset, confidence, dists_npy = speaker_validation.evaluate(video_fps, tracker.sync_seq, part_audio)
+                    silent_audio = np.zeros(part_audio.shape, dtype=audio.dtype)
+                    __, conf_silent, __ = speaker_validation.evaluate(video_fps, tracker.sync_seq, silent_audio)
+                    # print(conf_silent)
+                    confidence[conf_silent > 3] = 0
+                    # confidence = conf_silent
 
                     if config.debug:
                         print("Sequence length:", len(tracker.sync_seq))
-                        debug_cap = cv2.VideoCapture(config.video_dir)
+                        debug_cap = cv2.VideoCapture(video_dir)
                         debug_cap.set(1, tracker.start_shot)
                         player.play()
                         for i in range(len(tracker.sync_seq)):
                             if i < 6:
-                                __, img = debug_cap.read()
+                                if need_to_resize:
+                                    __, img = debug_cap.read()
+                                    img = cv2.resize(img, (1280, 720))
+                                else:
+                                    __, img = debug_cap.read()
                                 cv2.imshow('Speaking', img)
                                 cv2.waitKey(40)
                             else:
-                                __, img = debug_cap.read()
+                                if need_to_resize:
+                                    __, img = debug_cap.read()
+                                    img = cv2.resize(img, (1280, 720))
+                                else:
+                                    __, img = debug_cap.read()
                                 box = tracker.bbox_seq[i]
                                 lip_box = tracker.lip_box_seq[i]
                                 try:
@@ -216,7 +242,6 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
                 if config.enable_syncnet:
                     part_audio = audio[int(16000 // video_fps * tracker.start_shot): int(
                         16000 // video_fps * (tracker.end_shot - config.patience + 1))]
-
                     if len(part_audio) != len(tracker.sync_seq[:-config.patience]) * 16000 // video_fps:
                         print("fatal: video and audio does not match")
                         print("startshot", tracker.start_shot)
@@ -227,23 +252,37 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
                     if config.debug:
                         wavfile.write('temp/segment.wav', 16000, part_audio)
                         player = AudioPlayer('temp/segment.wav')
+
                     offset, confidence, dists_npy = speaker_validation.evaluate(video_fps,
                                                                                 tracker.sync_seq[:-config.patience],
                                                                                 part_audio)
+                    silent_audio = np.zeros(part_audio.shape, dtype=audio.dtype)
+                    __, conf_silent, __ = speaker_validation.evaluate(video_fps, tracker.sync_seq[:-config.patience], silent_audio)
+                    # print(conf_silent)
+                    confidence[conf_silent > 3] = 0
+                    # confidence = conf_silent
 
                     if config.debug:
                         print("Sequence length:", len(tracker.sync_seq[:-config.patience]))
 
-                        debug_cap = cv2.VideoCapture(config.video_dir)
+                        debug_cap = cv2.VideoCapture(video_dir)
                         debug_cap.set(1, tracker.start_shot)
                         player.play()
                         for i in range(len(tracker.sync_seq) - config.patience):
                             if i < 6:
-                                __, img = debug_cap.read()
+                                if need_to_resize:
+                                    __, img = debug_cap.read()
+                                    img = cv2.resize(img, (1280, 720))
+                                else:
+                                    __, img = debug_cap.read()
                                 cv2.imshow('Speaking', img)
                                 cv2.waitKey(40)
                             else:
-                                __, img = debug_cap.read()
+                                if need_to_resize:
+                                    __, img = debug_cap.read()
+                                    img = cv2.resize(img, (1280, 720))
+                                else:
+                                    __, img = debug_cap.read()
                                 box = tracker.bbox_seq[i]
                                 lip_box = tracker.lip_box_seq[i]
                                 try:

@@ -48,12 +48,19 @@ class CV_Tracker:
     def update_lip_seq(self, raw_img, boundary_box, lip_center=None):
         if lip_center is not None:
             length = int(max(boundary_box[3] - boundary_box[1], boundary_box[2] - boundary_box[0]) / 2)
+            length *= 1.2
             lip_box = [int(max(lip_center[1] - length, 0)), int(lip_center[1] + length),
                        int(max(lip_center[0] - length, 0)), int(lip_center[0] + length)]
-            lip_center_picture = raw_img[int(lip_box[0]):int(lip_box[1]), int(lip_box[2]):int(lip_box[3]), :]
-            lip_center_picture = misc.imresize(lip_center_picture, (224, 224), interp='bilinear')
+            lip_center_picture_raw = raw_img[int(lip_box[0]):int(lip_box[1]), int(lip_box[2]):int(lip_box[3]), :]
+            try:
+                lip_center_picture = misc.imresize(lip_center_picture_raw, (224, 224), interp='bilinear')
+            except Exception:
+                print("Tracker: misc resize error")
+                print(lip_box)
+                print(lip_center_picture_raw)
+                exit(-1)
             if config.debug:
-                cv2.imshow('lip',lip_center_picture)
+                cv2.imshow('lip', lip_center_picture)
                 cv2.waitKey(40)
             self.sync_seq.append(lip_center_picture)
             if config.debug:
@@ -65,8 +72,14 @@ class CV_Tracker:
             lip_box = self.last_lip_box
             lip_box = [int(max(lip_box[0] + self.delta[1], 0)), int(max(lip_box[1] + self.delta[0], 0)),
                        int(max(lip_box[2] + self.delta[1], 0)), int(max(lip_box[3] + self.delta[0], 0))]
-            lip_center_picture = raw_img[lip_box[0]:lip_box[1], lip_box[2]:lip_box[3], :]
-            lip_center_picture = misc.imresize(lip_center_picture, (224, 224), interp='bilinear')
+            lip_center_picture_raw = raw_img[lip_box[0]:lip_box[1], lip_box[2]:lip_box[3], :]
+            try:
+                lip_center_picture = misc.imresize(lip_center_picture_raw, (224, 224), interp='bilinear')
+            except Exception:
+                print("Tracker: misc resize error")
+                print(lip_box)
+                print(lip_center_picture_raw)
+                exit(-1)
             if config.debug:
                 cv2.imshow('lip', lip_center_picture)
                 cv2.waitKey(40)

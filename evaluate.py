@@ -34,11 +34,11 @@ def evaluate_result(labelfile, resultfile):
     except Exception:
         print("Evaluation: the result file is not exist.")
         return -1, -1
-    print(canditates)
+    # print(canditates)
     for row_index in range(len(truelable)):
         for col_index in range(len(truelable[row_index])):
             truelable[row_index][col_index] = process_frame(truelable[row_index][col_index])
-    print(truelable)
+    # print(truelable)
     missed = 0
     total = 0
     preset = []
@@ -49,8 +49,8 @@ def evaluate_result(labelfile, resultfile):
     for pair in truelable:
         valset += [i for i in range(pair[0], pair[1])]
 
-    print(valset)
-    print(preset)
+    # print(valset)
+    # print(preset)
     preset = set(preset)
     valset = set(valset)
 
@@ -62,8 +62,8 @@ def evaluate_result(labelfile, resultfile):
     try:
         FPR = len(preset - valset) / len(preset)
         recall = len(preset & valset) / len(valset)
-        print("total valid  frames: ", total)
-        print("total missed  frames: ", missed)
+        print("total valid  frames: ", len(valset))
+        print("total missed  frames: ", len(preset - valset))
         print("FPR: ", FPR)
         print("Recall: ", recall)
     except Exception:
@@ -73,4 +73,4 @@ def evaluate_result(labelfile, resultfile):
 
 
 if __name__ == '__main__':
-    evaluate_result()
+    evaluate_result('interview-5.csv', 'interview-5.txt')
