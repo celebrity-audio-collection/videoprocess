@@ -16,6 +16,7 @@ import gc
 import numpy as np
 from scipy.io import wavfile
 import time
+import argparse
 
 if config.debug:
     from audio_player import AudioPlayer
@@ -335,6 +336,14 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
 
 if __name__ == '__main__':
 
+    parser = argparse.ArgumentParser(description='basic run command')
+
+    parser.add_argument('--POI', default='', help='the POI to start with')
+
+    args = parser.parse_args()
+    starting_POI = args.POI
+    print(starting_POI)
+
     # global init
     face_detection_model, face_validation_model, speaker_validation = load_models()
     print("all model loaded")
@@ -350,7 +359,14 @@ if __name__ == '__main__':
     if not os.path.exists(config.output_dir):
         os.makedirs(config.output_dir)
 
+
+
     POIS = os.listdir(config.video_base_dir)
+    if starting_POI != '':
+        while POIS[0] != starting_POI:
+            print("skipping {}".format(POIS[0]))
+            POIS.pop(0)
+
     for POI in POIS:
         print("current POI: {}".format(POI))
         if not os.path.exists((os.path.join(config.image_base_dir, POI))):

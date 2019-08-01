@@ -2,10 +2,12 @@ import os
 
 
 class Config:
+    # log 以及临时文件夹路径
     log_dir = './log'
     temp_dir = './temp'
     output_dir = './videos'
 
+    #
     video_base_dir = "./videos"
     image_base_dir = "./images"
     # video_num = 1
@@ -17,7 +19,7 @@ class Config:
     landmark_predictor = "model/dlib/shape_predictor_68_face_landmarks.dat"
 
     # visual
-    showimg = False
+    showimg = True
     debug = False
     write_video = False
 

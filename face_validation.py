@@ -16,22 +16,35 @@ if config.use_facenet:
     from facenet_code import facenet
 
 
+class FaceValidation_Config:
+
+    def __init__(self):
+        self.image_size = '112,112'
+        self.model = config.mobilenet_dir
+        self.ga_model = ''
+        self.gpu = config.gpuid
+        self.det = 0
+        self.flip =0
+        self.threshold = 1.24
+
 class FaceValidation:
 
     def __init__(self, model_path=config.face_validation_path):
 
         if config.use_insightface:
-            parser = argparse.ArgumentParser(description='face model test')
-            # InsightFace
-            parser.add_argument('--image-size', default='112,112', help='')
-            parser.add_argument('--model', default=config.mobilenet_dir, help='path to load model.')
-            parser.add_argument('--ga-model', default='', help='path to load model.')
-            parser.add_argument('--gpu', default=config.gpuid, type=int, help='gpu id')
-            parser.add_argument('--det', default=0, type=int,
-                                help='mtcnn option, 1 means using R+O, 0 means detect from begining')
-            parser.add_argument('--flip', default=0, type=int, help='whether do lr flip aug')
-            parser.add_argument('--threshold', default=1.24, type=float, help='ver dist threshold')
-            args = parser.parse_args()
+            # parser = argparse.ArgumentParser(description='face model test')
+            # # InsightFace
+            # parser.add_argument('--image-size', default='112,112', help='')
+            # parser.add_argument('--model', default=config.mobilenet_dir, help='path to load model.')
+            # parser.add_argument('--ga-model', default='', help='path to load model.')
+            # parser.add_argument('--gpu', default=config.gpuid, type=int, help='gpu id')
+            # parser.add_argument('--det', default=0, type=int,
+            #                     help='mtcnn option, 1 means using R+O, 0 means detect from begining')
+            # parser.add_argument('--flip', default=0, type=int, help='whether do lr flip aug')
+            # parser.add_argument('--threshold', default=1.24, type=float, help='ver dist threshold')
+            # args = parser.parse_args()
+            args = FaceValidation_Config()
+
 
             self.valmodel = FaceModel(args)
 
