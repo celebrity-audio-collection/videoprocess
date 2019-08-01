@@ -360,8 +360,6 @@ if __name__ == '__main__':
     if not os.path.exists(config.output_dir):
         os.makedirs(config.output_dir)
 
-
-
     POIS = os.listdir(config.video_base_dir)
     if starting_POI != '':
         while POIS[0] != starting_POI:

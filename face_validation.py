@@ -24,8 +24,9 @@ class FaceValidation_Config:
         self.ga_model = ''
         self.gpu = config.gpuid
         self.det = 0
-        self.flip =0
+        self.flip = 0
         self.threshold = 1.24
+
 
 class FaceValidation:
 
@@ -44,7 +45,6 @@ class FaceValidation:
             # parser.add_argument('--threshold', default=1.24, type=float, help='ver dist threshold')
             # args = parser.parse_args()
             args = FaceValidation_Config()
-
 
             self.valmodel = FaceModel(args)
 
