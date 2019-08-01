@@ -52,7 +52,8 @@ def load_models():
     return face_detection_model, face_validation_model, speaker_validation
 
 
-def process_single_video(video_dir, output_dir, face_detection_model, face_validation_model, speaker_validation, output_video_dir=None):
+def process_single_video(video_dir, output_dir, face_detection_model, face_validation_model, speaker_validation,
+                         output_video_dir=None):
     audio_tmp = './temp/audio.wav'
     command = ("ffmpeg -y -i %s -async 1 -ac 1 -vn -acodec pcm_s16le -ar 16000 %s > %s 2>&1" % (
         video_dir, audio_tmp, os.path.join(config.log_dir, "ffmpeg.log")))
