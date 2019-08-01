@@ -100,7 +100,7 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
             success, raw_image = cap.read()
         if not success:
             break
-
+        image = raw_image.copy()
         bboxes, landmarks = face_detection_model.update(raw_image)
         new_tracker_list = []
 
@@ -208,30 +208,30 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
                 caption = "No"
 
             if config.showimg:
-                cv2.rectangle(raw_image, (boundary[0], boundary[1]), (boundary[2], boundary[3]), (0, 255, 0), 2,
+                cv2.rectangle(image, (boundary[0], boundary[1]), (boundary[2], boundary[3]), (0, 255, 0), 2,
                               cv2.LINE_AA)
                 index_color = 0
                 for point in landmark:
                     pos = (point[0], point[1])
-                    cv2.circle(raw_image, pos, 1, (255, 255, 255 / 68 * index_color), -1)
+                    cv2.circle(image, pos, 1, (255, 255, 255 / 68 * index_color), -1)
                     index_color = index_color + 1
                 # lip center
                 lip_center = np.mean(landmark[3:], axis=0)
-                cv2.circle(raw_image, (lip_center[0], lip_center[1]), 1, (0, 0, 0), -1)
+                cv2.circle(image, (lip_center[0], lip_center[1]), 1, (0, 0, 0), -1)
                 for tracker in tracker_list:
                     if tracker.tracked is True:
                         bbox = tracker.bbox
-                        cv2.rectangle(raw_image, (int(bbox[0]), int(bbox[1])),
+                        cv2.rectangle(image, (int(bbox[0]), int(bbox[1])),
                                       (int(bbox[2] + bbox[0]), int(bbox[3] + bbox[1])), (255, 0, 0), 2, cv2.LINE_AA)
-                        cv2.putText(raw_image, str(tracker.series_name), (int(bbox[0]), int(bbox[1]) - 10),
+                        cv2.putText(image, str(tracker.series_name), (int(bbox[0]), int(bbox[1]) - 10),
                                     cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
-                        cv2.putText(raw_image, str(tracker.series_name), (int(bbox[0]), int(bbox[1]) - 10),
+                        cv2.putText(image, str(tracker.series_name), (int(bbox[0]), int(bbox[1]) - 10),
                                     cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
                     else:
                         print("Warning a invalid tracker was not removed")
-                cv2.putText(raw_image, str(caption), (boundary[0], boundary[1] - 10), cv2.FONT_HERSHEY_PLAIN, 1,
+                cv2.putText(image, str(caption), (boundary[0], boundary[1] - 10), cv2.FONT_HERSHEY_PLAIN, 1,
                             (0, 0, 0), 2)
-                cv2.putText(raw_image, str(caption), (boundary[0], boundary[1] - 10), cv2.FONT_HERSHEY_PLAIN, 1,
+                cv2.putText(image, str(caption), (boundary[0], boundary[1] - 10), cv2.FONT_HERSHEY_PLAIN, 1,
                             (255, 255, 255), 1)
 
         new_tracker_list = []
@@ -318,9 +318,9 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
             print('Shot {:d}, FPS {:.2f} '.format(shot_count, 1000 / (time.time() - start_time)), end='\n')
             start_time = time.time()
         if config.showimg:
-            cv2.imshow('Video', raw_image)
+            cv2.imshow('Video', image)
         if config.write_video:
-            videoWriter.write(raw_image)
+            videoWriter.write(image)
         shot_count += 1
 
         if cv2.waitKey(10) == 27:
