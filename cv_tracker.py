@@ -72,6 +72,8 @@ class CV_Tracker:
             lip_box = [int(max(lip_box[0] + self.delta[1], 0)), int(max(lip_box[1] + self.delta[1], 0)),
                        int(max(lip_box[2] + self.delta[0], 0)), int(max(lip_box[3] + self.delta[0], 0))]
             lip_center_picture_raw = raw_img[lip_box[0]:lip_box[1], lip_box[2]:lip_box[3], :]
+            if len(lip_center_picture_raw) == 0:
+                lip_center_picture_raw = np.zeros((224, 224, 3))
             try:
                 lip_center_picture = cv2.resize(lip_center_picture_raw, (224, 224))
             except Exception:
