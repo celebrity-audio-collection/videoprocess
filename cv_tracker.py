@@ -25,24 +25,30 @@ class CV_Tracker:
         self.bbox = (
             boundary_box[0], boundary_box[1], boundary_box[2] - boundary_box[0], boundary_box[3] - boundary_box[1])
 
-        self.tracked = True
-        self.series_name = "Series" + str(series_id)
-        self.drop_count = 0
-        self.valid = True
-        self.start_shot = shot_count
-        self.end_shot = None
-        self.delta = (0, 0)
-        self.sync_seq = []
+        self.tracked = True                                     # 在某次追踪中，是否追踪到目标
+        self.series_name = "Series" + str(series_id)            # tracker 名称
+        self.drop_count = 0                                     # 记录到当前帧为止，追踪区域中没有POI的帧数，区域中出现POI后清零
+        self.valid = True                                       # 辅助判断当前帧追踪区域中是否存在POI
+        self.start_shot = shot_count                            # 追踪开始帧
+        self.end_shot = None                                    # 追踪结束帧
+        self.delta = (0, 0)                                     # 追踪区域偏移量，用于在追踪区域中没有POI的情况下移动嘴唇节选框，裁剪图片
+        self.sync_seq = []                                      # tracker 追踪过程中，获得的以嘴唇为中心的正方形图片序列，用于syncnet输入
 
-        self.bbox_seq = []
-        self.lip_box_seq = []
+        self.bbox_seq = []                                      # debug 模式下信息记录
+        self.lip_box_seq = []                                   #
 
-        self.last_lip_box = None
+        self.last_lip_box = None                                # 前一帧中的嘴唇区域节选框
         self.update_lip_seq(raw_img, boundary_box, lip_center)
-        self.tracker.init(raw_img, self.bbox)
+        self.tracker.init(raw_img, self.bbox)                   # 初始化tracker
         self.remove = False
 
     # save lip sequence
+    '''
+        @requires raw_img ！= None
+        @modifies self.sync_seq
+        @effects  如果lip_center不为空，利用人脸检测的长边以及lip_center切割嘴唇图片
+                  否则利用上一次的切分边界以及追踪偏移切割嘴唇图片，若偏移超出原始图片范围，将图片置零
+    '''
     def update_lip_seq(self, raw_img, boundary_box, lip_center=None):
         if lip_center is not None:
             length = int(max(boundary_box[3] - boundary_box[1], boundary_box[2] - boundary_box[0]) / 2)
@@ -93,6 +99,12 @@ class CV_Tracker:
 
             self.last_lip_box = lip_box
 
+    # track
+    '''
+        @requires raw_img!= None, shot_count >= 0
+        @modifies self.bbox, self.valid, self.remove, self.tracked, self.end_shot
+        @effects  追踪一帧图片，如果追踪到，更新追踪偏移，否则将追踪器标记为待移除
+    '''
     def update(self, raw_img, shot_count):
         self.tracked, new_bbox = self.tracker.update(raw_img)
         if self.tracked is True:
@@ -105,7 +117,7 @@ class CV_Tracker:
             self.remove = True
         return self.tracked, self.bbox
 
-    # judge if tracker box overlaps with face detection box
+    # 判断该人脸是否已经被tracker追踪
     def is_tracking(self, center):
         tracking_area = self.bbox
         area_center = (tracking_area[0] + tracking_area[2] / 2, tracking_area[1] + tracking_area[3] / 2)
@@ -116,6 +128,7 @@ class CV_Tracker:
         else:
             return False
 
+    # 判断该tracker 是否追踪到了某个人脸候选框
     def is_valid(self, center):
         if self.valid is True:
             return True

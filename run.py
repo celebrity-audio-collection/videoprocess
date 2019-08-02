@@ -51,39 +51,48 @@ def load_models():
     speaker_validation = SpeakerValidation()
     return face_detection_model, face_validation_model, speaker_validation
 
+'''
+    @requires video_dir != None, output_dir != None, face_detection_model !=  None, face_validation_model != None, speaker_validation != None,
+    @effects  处理单个视频，输出切分标记到output_dir
+'''
+def process_single_video(video_dir, output_dir, face_detection_model, face_validation_model, speaker_validation, output_video_dir=None):
 
-def process_single_video(video_dir, output_dir, face_detection_model, face_validation_model, speaker_validation,
-                         output_video_dir=None):
-    audio_tmp = './temp/audio.wav'
+    # 将视频音轨导出到临时文件夹中，采样率为16000
+    audio_tmp = os.path.join(config.temp_dir,'audio.wav')
     command = ("ffmpeg -y -i %s -async 1 -ac 1 -vn -acodec pcm_s16le -ar 16000 %s > %s 2>&1" % (
         video_dir, audio_tmp, os.path.join(config.log_dir, "ffmpeg.log")))
     output = subprocess.call(command, shell=True, stdout=None)
     sample_rate, audio = wavfile.read(audio_tmp)
-    print(audio.shape)
+    # print(audio.shape)
 
-    # result
+    # 打开标签输出文件
     predict_results = open(output_dir, "w")
     # predict_results = open(os.path.join(os.getcwd(), 'result', POI, POI + '-' + str(config.video_num) + '.txt'), "w")
 
+    # 初始化临时变量
     tracker_list = []
     candidates = []
     series_id = 0
 
+    # 验证视频帧数
     cap = cv2.VideoCapture(video_dir)
     video_fps = cap.get(cv2.CAP_PROP_FPS)
     if config.enable_syncnet:
         assert video_fps == 25
     print("Video FPS:", video_fps)
 
+    # 是否输出视频，若需要，则需要传入额外参数output_video_dir
     if config.write_video:
         videoWriter = cv2.VideoWriter(os.path.join(output_video_dir, 'song.avi'),
                                       cv2.VideoWriter_fourcc(*'XVID'), video_fps, (1280, 720))
 
+    # 视频宽度大于1280时，缩放至 1280 * 720
     if cap.get(cv2.CAP_PROP_FRAME_WIDTH) > 1280:
         need_to_resize = True
     else:
         need_to_resize = False
 
+    # 跳读n帧 debug 过程中使用，实际运行中不可跳读
     # start_frame = 0
     # cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
     # shot_count = start_frame - 1
@@ -93,6 +102,7 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
     print("start process")
     start_time = time.time()
     while True:
+        # resize
         if need_to_resize:
             success, raw_image = cap.read()
             if not success:
@@ -104,9 +114,10 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
             break
         image = raw_image.copy()
         bboxes, landmarks = face_detection_model.update(raw_image)
-        new_tracker_list = []
+
 
         # track
+        new_tracker_list = []
         for tracker in tracker_list:
             tracked, bbox = tracker.update(raw_image, shot_count)
             # if target lost, start SyncNet process
@@ -116,6 +127,8 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
                 if config.enable_syncnet:
                     if config.debug:
                         print(16000 * tracker.start_shot // video_fps, 16000 * (tracker.end_shot) // video_fps)
+
+                    # 默认视频帧速率为25时，截取相应音频并验证长度是否合规
                     part_audio = audio[
                                  int(16000 * tracker.start_shot // video_fps):int(
                                      16000 * (tracker.end_shot) // video_fps)]
@@ -131,6 +144,7 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
                         wavfile.write('temp/segment.wav', 16000, part_audio)
                         player = AudioPlayer('temp/segment.wav')
 
+                    # 分别使用原音轨和空音轨调用 syncnet，对于空音轨中置信度高于3 的部分，将原音轨中计算出的相应置信度置零
                     offset, confidence, dists_npy = speaker_validation.evaluate(video_fps, tracker.sync_seq, part_audio)
                     silent_audio = np.zeros(part_audio.shape, dtype=audio.dtype)
                     __, conf_silent, __ = speaker_validation.evaluate(video_fps, tracker.sync_seq, silent_audio)
@@ -138,6 +152,7 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
                     confidence[conf_silent > 3] = 0
                     # confidence = conf_silent
 
+                    # debug 模式下输出额外信息
                     if config.debug:
                         print("Sequence length:", len(tracker.sync_seq))
                         debug_cap = cv2.VideoCapture(video_dir)
@@ -192,6 +207,7 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
 
             if validation:
                 caption = "Yes"
+                # 验证该人脸是否已经被某个追踪器追踪
                 tracking = isTracking((center[1], center[0]), tracker_list)
                 lip_center = np.mean(landmark[3:], axis=0)
                 # new target
@@ -200,6 +216,7 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
                     new_tracker = CV_Tracker(raw_image, boundary, series_id, lip_center, shot_count)
                     tracker_list.append(new_tracker)
                 else:
+                    # 验证追踪器是否追踪到该人脸
                     for tracker in tracker_list:
                         if tracker.valid is True:
                             continue
@@ -209,6 +226,7 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
             else:
                 caption = "No"
 
+            # showimg 模式下输出人脸检测，识别，追踪信息
             if config.showimg:
                 cv2.rectangle(image, (boundary[0], boundary[1]), (boundary[2], boundary[3]), (0, 255, 0), 2,
                               cv2.LINE_AA)
@@ -236,6 +254,7 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
                 cv2.putText(image, str(caption), (boundary[0], boundary[1] - 10), cv2.FONT_HERSHEY_PLAIN, 1,
                             (255, 255, 255), 1)
 
+        # 对于追踪区域中没有人脸的tracker，判断是否需要关闭tracker
         new_tracker_list = []
         for tracker in tracker_list:
             if tracker.valid is False:
@@ -245,6 +264,7 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
                 tracker.set_end_shot(shot_count)
                 if config.debug:
                     print("tracker missed the target")
+                # 关闭 tracker 前，处理tracker保存的视频序列
                 if config.enable_syncnet:
                     part_audio = audio[int(16000 // video_fps * tracker.start_shot): int(
                         16000 // video_fps * (tracker.end_shot - config.patience + 1))]
@@ -338,9 +358,7 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='basic run command')
-
     parser.add_argument('--POI', default='', help='the POI to start with')
-
     args = parser.parse_args()
     starting_POI = args.POI
     print(starting_POI)
@@ -360,7 +378,9 @@ if __name__ == '__main__':
     if not os.path.exists(config.output_dir):
         os.makedirs(config.output_dir)
 
+    # 根据文件路径结构获取视频以及POI照片，开始批处理
     POIS = os.listdir(config.video_base_dir)
+    # 跳跃至初始POI，用于越过处理完成的POI
     if starting_POI != '':
         while POIS[0] != starting_POI:
             print("skipping {}".format(POIS[0]))

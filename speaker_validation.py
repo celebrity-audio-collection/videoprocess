@@ -2,13 +2,18 @@ from common import config
 from syncnet import SyncNetInstance
 import numpy as np
 
-
+'''
+    说话人检测，采用 syncnet 进行唇动与语音对齐
+'''
 class SpeakerValidation:
 
     def __init__(self):
         self.model = SyncNetInstance.SyncNetInstance()
         self.model.loadParameters(config.syncnet_model)
 
+    '''
+        输出格式装换 帧号 -> 时:分:秒:帧
+    '''
     def form_convert(self, frame_id):
         h = int(frame_id / 90000)
         rest = frame_id % 90000
@@ -18,12 +23,23 @@ class SpeakerValidation:
         lf = rest % 25
         return "{:0>2d}:{:0>2d}:{:0>2d}:{:0>2d}".format(h, m, s, lf)
 
+
+    '''
+        @requires video_fps == 25, len(image_seq) >= 0, len(audio_seq) >= 0, len(image_seq) * 640 == len(audio_seq
+        @modifies 
+        @effects  调用syncnet 评估视频序列与音频序列是否匹配，由于syncnet以6帧为单位进行评估，输出的len(confidence) = len(image_seq) - 6
+    '''
     def evaluate(self, video_fps, image_seq, audio_seq):
         if len(image_seq) <= 6:
             return None, np.array([0]), None
         offset, confidence, dists_npy = self.model.evaluate_part(video_fps, image_seq, audio_seq)
         return offset, confidence, dists_npy
 
+    '''
+        @requires confidence >= 0, start_shot >= 0, logfile == python file object
+        @modifies
+        @effects   根据阈值判断POI是否说话，获取起始和结束帧，格式化输出到文件
+    '''
     def verification(self, confidence, start_shot, logfile):
         candidates = []
         processed = -1
