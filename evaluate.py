@@ -64,12 +64,15 @@ def evaluate_result(labelfile, resultfile):
     # print("total missed  frames: ", len(preset - valset))
     # print("miss rate: ",missed)]
     try:
+        ACC = len(preset & valset) / len(preset)
         FPR = len(preset - valset) / len(preset)
         recall = len(preset & valset) / len(valset)
         print("total valid  frames: ", len(valset))
         print("total missed  frames: ", len(preset - valset))
+        print("ACC: ", ACC)
         print("FPR: ", FPR)
         print("Recall: ", recall)
+        print("f1 micro: ", 2*ACC*recall/(recall + ACC))
     except Exception:
         print("Evaluation: divide zero")
         return -1, -1

@@ -15,6 +15,11 @@ class FaceDetection:
         self.im_scale_updated = False
         self.im_scale = None
 
+    '''
+        @requires raw_img != []
+        @modifies self.im_scale, self.im_scale_updated 
+        @effects  根据视频截图，生成retinaface 所需要的缩放比例
+    '''
     def update_im_scale(self, raw_img):
         scales = config.detect_scale
         im_shape = raw_img.shape
@@ -30,6 +35,10 @@ class FaceDetection:
             self.im_scale = float(max_size) / float(im_size_max)
         self.im_scale_updated = True
 
+    '''
+        @requires raw_img != []
+        @effects  人脸检测，返回检测框和五点坐标
+    '''
     def update(self, raw_img):
         # using retina face
         if not self.im_scale_updated:

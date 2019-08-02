@@ -5,9 +5,13 @@ class Config:
     # log 以及临时文件夹路径
     log_dir = './log'
     temp_dir = './temp'
+
+    # 切分标签输出路径，可以输出到与视频相同的文件夹下，文件路径结构与视频向相同
     output_dir = './videos'
 
-    #
+    # 视频及文图根路径，文件结构为
+    # {video_base_dir}/名人/类别/该类别视频
+    # {image_base_dir}/名人/该名人所有照片
     video_base_dir = "./videos"
     image_base_dir = "./images"
     # video_num = 1
@@ -16,9 +20,10 @@ class Config:
     # image_files = [os.path.join(os.getcwd(), 'images', POI, file) for file in
     #                os.listdir(os.path.join(os.getcwd(), 'images', POI))]
 
+    # dlib landmark predictor
     landmark_predictor = "model/dlib/shape_predictor_68_face_landmarks.dat"
 
-    # visual
+    # switches
     showimg = True
     debug = False
     write_video = False
@@ -29,11 +34,13 @@ class Config:
     thresh = 0.8
     gpuid = 0
 
-    # Tracker
+    # CV_Tracker
+    # 在tracker内部区域中没有POI的情况下，tracker继续追踪的帧数
     tracker_type = 'MOSSE'
     patience = 8
 
     # face validation
+    # 可选择retinaface 或者 facenet
     # FaceNet
     use_facenet = False
     face_validation_path = "model/facenet_model/20180402-114759"
@@ -47,7 +54,9 @@ class Config:
     else:
         use_insightface = False
     mobilenet_dir = './model/insightface_model/mobilenet/model,0'
+    # cosine 距离阈值
     cosine_threshold = 0.8
+    # 欧氏距离阈值
     dist_threshold = 1.24
 
     # speaker validation
@@ -56,15 +65,12 @@ class Config:
 
     syncnet_model = "./model/syncnet_v2.model"
 
+    # 起始点阈值与持续阈值，当syncnet输出的confidence高于starting_confidence时，视为POI开始说话
+    # 不低于patient_confidence时判断为连续刷说话，低于patient_confidence时视为说话中断。
     starting_confidence = 4
     patient_confidence = 3
 
     # evaluation
     enable_evaluation = True
-
-    @property
-    def input_shape(self):
-        return (self.minibatch_size, self.nr_channel) + self.image_shape
-
 
 config = Config()
