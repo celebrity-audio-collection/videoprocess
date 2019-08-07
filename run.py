@@ -8,7 +8,7 @@ from cv_tracker import CV_Tracker
 from face_detection import FaceDetection
 from face_validation import FaceValidation
 from speaker_validation import SpeakerValidation
-from evaluate import evaluate_result
+from evaluate import *
 
 import cv2
 import subprocess
@@ -17,6 +17,15 @@ import numpy as np
 from scipy.io import wavfile
 import time
 import argparse
+
+# log
+fpr = {"entertain": 0, "interview": 0, "song": 0, "act": 0, "live": 0, "recite": 0, "speech": 0, "vlog": 0, "tvs": 0,
+       "movie": 0}
+recall = {"entertain": 0, "interview": 0, "song": 0, "act": 0, "live": 0, "recite": 0, "speech": 0, "vlog": 0, "tvs": 0,
+          "movie": 0}
+num = {"entertain": 0, "interview": 0, "song": 0, "act": 0, "live": 0, "recite": 0, "speech": 0, "vlog": 0, "tvs": 0,
+       "movie": 0}
+names = ["entertain", "interview", "song", "act", "live", "recite", "speech", "vlog", "tvs", "movie"]
 
 if config.debug:
     from audio_player import AudioPlayer
@@ -51,14 +60,17 @@ def load_models():
     speaker_validation = SpeakerValidation()
     return face_detection_model, face_validation_model, speaker_validation
 
+
 '''
     @requires video_dir != None, output_dir != None, face_detection_model !=  None, face_validation_model != None, speaker_validation != None,
     @effects  处理单个视频，输出切分标记到output_dir
 '''
-def process_single_video(video_dir, output_dir, face_detection_model, face_validation_model, speaker_validation, output_video_dir=None):
 
+
+def process_single_video(video_dir, output_dir, face_detection_model, face_validation_model, speaker_validation,
+                         output_video_dir=None):
     # 将视频音轨导出到临时文件夹中，采样率为16000
-    audio_tmp = os.path.join(config.temp_dir,'audio.wav')
+    audio_tmp = os.path.join(config.temp_dir, 'audio.wav')
     command = ("ffmpeg -y -i %s -async 1 -ac 1 -vn -acodec pcm_s16le -ar 16000 %s > %s 2>&1" % (
         video_dir, audio_tmp, os.path.join(config.log_dir, "ffmpeg.log")))
     output = subprocess.call(command, shell=True, stdout=None)
@@ -99,7 +111,18 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
 
     shot_count = 0
 
-    print("start process")
+    print("\033[94mstart process\033[0m")
+    video_type = video_dir.split("/")[-2]
+    if video_type == "interview" or video_type == "speech":
+        config.starting_confidence = config.easy_starting_confidence
+        config.patient_confidence = config.easy_patient_confidence
+    elif video_type == "entertain":
+        config.starting_confidence = config.hard_starting_confidence
+        config.patient_confidence = config.hard_patient_confidence
+    else:
+        config.starting_confidence = config.normal_starting_confidence
+        config.patient_confidence = config.normal_patient_confidence
+    print("\033[94mthreshold:  %s & %s\033[0m" % (str(config.starting_confidence), str(config.patient_confidence)))
     start_time = time.time()
     while True:
         # resize
@@ -114,7 +137,6 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
             break
         image = raw_image.copy()
         bboxes, landmarks = face_detection_model.update(raw_image)
-
 
         # track
         new_tracker_list = []
@@ -149,7 +171,7 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
                     silent_audio = np.zeros(part_audio.shape, dtype=audio.dtype)
                     __, conf_silent, __ = speaker_validation.evaluate(video_fps, tracker.sync_seq, silent_audio)
                     # print(conf_silent)
-                    confidence[conf_silent > 3] = 0
+                    confidence[conf_silent > 2.8] = 0
                     # confidence = conf_silent
 
                     # debug 模式下输出额外信息
@@ -286,7 +308,7 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
                     __, conf_silent, __ = speaker_validation.evaluate(video_fps, tracker.sync_seq[:-config.patience],
                                                                       silent_audio)
                     # print(conf_silent)
-                    confidence[conf_silent > 3] = 0
+                    confidence[conf_silent > 2.8] = 0
                     # confidence = conf_silent
 
                     if config.debug:
@@ -345,14 +367,24 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
             videoWriter.write(image)
         shot_count += 1
 
+        # 跳出循环
         if cv2.waitKey(10) == 27:
             break
 
     predict_results.close()
+
+    dataclean(output_dir)
+
     # evaluate
     if config.enable_evaluation:
         index = video_dir.rfind('.')
-        evaluate_result(video_dir[:index] + ".csv", output_dir)
+        FPR, Recall = evaluate_result(video_dir[:index] + ".csv", output_dir)
+        try:
+            fpr[video_type] += FPR
+            recall[video_type] += Recall
+            num[video_type] += 1
+        except:
+            print("\033[91man uncommen type: %s\033[0m" % (video_type))
 
 
 if __name__ == '__main__':
@@ -361,16 +393,16 @@ if __name__ == '__main__':
     parser.add_argument('--POI', default='', help='the POI to start with')
     args = parser.parse_args()
     starting_POI = args.POI
-    print(starting_POI)
+    print("start at:", starting_POI)
 
     # global init
     face_detection_model, face_validation_model, speaker_validation = load_models()
-    print("all model loaded")
+    print("\033[94mall model loaded\033[0m")
     #
     if not os.path.exists(config.video_base_dir):
-        print("fatal: invalid base video path")
+        print("\033[91mfatal: invalid base video path\033[0m")
     if not os.path.exists(config.image_base_dir):
-        print("fatal: invalid base video path")
+        print("\033[91mfatal: invalid base video path\033[0m")
     if not os.path.exists(config.temp_dir):
         os.makedirs(config.temp_dir)
     if not os.path.exists(config.log_dir):
@@ -383,27 +415,27 @@ if __name__ == '__main__':
     # 跳跃至初始POI，用于越过处理完成的POI
     if starting_POI != '':
         while POIS[0] != starting_POI:
-            print("skipping {}".format(POIS[0]))
+            print("\033[94mskipping {}\033[0m".format(POIS[0]))
             POIS.pop(0)
 
     for POI in POIS:
-        print("current POI: {}".format(POI))
+        print("\033[96mcurrent POI: {}\033[0m".format(POI))
         if not os.path.exists((os.path.join(config.image_base_dir, POI))):
-            print("image of {} is not exist".format(POI))
+            print("\033[91mimage of {} is not exist\033[0m".format(POI))
             continue
         POI_imgs = [os.path.join(config.image_base_dir, POI, pic) for pic in
                     os.listdir(os.path.join(config.image_base_dir, POI))]
         POI_categories = os.listdir(os.path.join(config.video_base_dir, POI))
 
         face_validation_model.update_POI(POI_imgs)
-        print("POI images updated")
+        print("\033[94mPOI images updated\033[94m")
 
         # 遍历文件下所有文件
         for category in POI_categories:
             category_video = os.path.join(config.video_base_dir, POI, category)
             for root, dirs, files in os.walk(category_video):
                 for file in files:
-                    if file.find('.csv') > 0 or file.find('.txt') > 0:
+                    if file.find('.csv') > 0 or file.find('.txt') > 0 or file.find(".wav") > 0:
                         continue
                     index = file.rfind('.')
                     category_output = root.replace(config.video_base_dir, config.output_dir)
@@ -411,10 +443,19 @@ if __name__ == '__main__':
                         os.makedirs(category_output)
                     single_video_dir = os.path.join(root, file)
                     single_output_dir = os.path.join(category_output, file[:index] + '.txt')
-                    print("Processing video: {}".format(single_video_dir))
+                    print("\033[93mProcessing video: {}\033[0m".format(single_video_dir))
+                    filename, filetype = os.path.splitext(file)
                     try:
                         process_single_video(single_video_dir, single_output_dir, face_detection_model,
                                              face_validation_model, speaker_validation)
                     except AssertionError:
-                        print("FPS of {} is not 25.".format(single_video_dir))
+                        print("\033[91mFPS of {} is not 25.\033[0m".format(single_video_dir))
                     gc.collect()
+
+    print("\033[94mcomplete\033[0m")
+    for name in names:
+        if num[name] == 0:
+            continue
+        FPR = fpr[name] / num[name]
+        Recall = recall[name] / num[name]
+        print("\033[92m%s has number: %s\tFPR: %s\tRecall: %s\033[0m" % (name, num[name], FPR, Recall))

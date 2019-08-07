@@ -7,13 +7,13 @@ class Config:
     temp_dir = './temp'
 
     # 切分标签输出路径，可以输出到与视频相同的文件夹下，文件路径结构与视频向相同
-    output_dir = './videos'
+    output_dir = './result'
 
     # 视频及文图根路径，文件结构为
     # {video_base_dir}/名人/类别/该类别视频
     # {image_base_dir}/名人/该名人所有照片
-    video_base_dir = "./videos"
-    image_base_dir = "./images"
+    video_base_dir = "/work4/zhangpengyuan/videos-finecut"
+    image_base_dir = "/work4/chengsitong/cslt/zzy/poi"
     # video_num = 1
     # video_dir = [os.path.join(os.getcwd(), 'videos', POI, file) for file in
     #              os.listdir(os.path.join(os.getcwd(), 'videos', POI))][video_num - 1]
@@ -24,7 +24,7 @@ class Config:
     landmark_predictor = "model/dlib/shape_predictor_68_face_landmarks.dat"
 
     # switches
-    showimg = True
+    showimg = False
     debug = False
     write_video = False
 
@@ -67,10 +67,21 @@ class Config:
 
     # 起始点阈值与持续阈值，当syncnet输出的confidence高于starting_confidence时，视为POI开始说话
     # 不低于patient_confidence时判断为连续刷说话，低于patient_confidence时视为说话中断。
-    starting_confidence = 4
-    patient_confidence = 3
+    starting_confidence = 4  # default
+    patient_confidence = 3  # default
+
+    # 不同类型视频的syncnet阈值
+    # easy是指简单场景下的阈值，比如interview、speech
+    # hard是指困难场景下的阈值，比如entertain
+    easy_starting_confidence = 4.2
+    easy_patient_confidence = 2.8
+    normal_starting_confidence = 4.8
+    normal_patient_confidence = 3.1
+    hard_starting_confidence = 5.1
+    hard_patient_confidence = 3.3
 
     # evaluation
     enable_evaluation = True
+
 
 config = Config()
