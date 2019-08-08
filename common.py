@@ -37,7 +37,7 @@ class Config:
     # CV_Tracker
     # 在tracker内部区域中没有POI的情况下，tracker继续追踪的帧数
     tracker_type = 'MOSSE'
-    patience = 8
+    patience = 5
 
     # face validation
     # 可选择retinaface 或者 facenet
@@ -73,12 +73,12 @@ class Config:
     # 不同类型视频的syncnet阈值
     # easy是指简单场景下的阈值，比如interview、speech
     # hard是指困难场景下的阈值，比如entertain
-    easy_starting_confidence = 4.2
-    easy_patient_confidence = 2.8
+    easy_starting_confidence = 4.3
+    easy_patient_confidence = 2.7
     normal_starting_confidence = 4.8
-    normal_patient_confidence = 3.1
-    hard_starting_confidence = 5.1
-    hard_patient_confidence = 3.3
+    normal_patient_confidence = 2.8
+    hard_starting_confidence = 5.4
+    hard_patient_confidence = 3
 
     # evaluation
     enable_evaluation = True

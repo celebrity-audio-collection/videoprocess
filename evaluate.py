@@ -93,7 +93,7 @@ def dataclean(output_dir):
             while a != "":
                 pair = a.strip().split("\t")
                 slice_start = process_frame(pair[0])
-                if slice_start - process_frame(candidate_results[-1][0]) - process_frame(candidate_results[-1][1]) <= 5:
+                if slice_start - process_frame(candidate_results[-1][0]) - process_frame(candidate_results[-1][1]) <= 9:
                     [last_start, last_length] = candidate_results.pop()
                     new_end = slice_start + process_frame(pair[1])
                     new_length = new_end - process_frame(last_start)

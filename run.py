@@ -171,7 +171,7 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
                     silent_audio = np.zeros(part_audio.shape, dtype=audio.dtype)
                     __, conf_silent, __ = speaker_validation.evaluate(video_fps, tracker.sync_seq, silent_audio)
                     # print(conf_silent)
-                    confidence[conf_silent > 2.8] = 0
+                    confidence[conf_silent > 2.5] = 0
                     # confidence = conf_silent
 
                     # debug 模式下输出额外信息
@@ -308,7 +308,7 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
                     __, conf_silent, __ = speaker_validation.evaluate(video_fps, tracker.sync_seq[:-config.patience],
                                                                       silent_audio)
                     # print(conf_silent)
-                    confidence[conf_silent > 2.8] = 0
+                    confidence[conf_silent > 2.5] = 0
                     # confidence = conf_silent
 
                     if config.debug:
