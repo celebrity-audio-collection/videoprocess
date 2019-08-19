@@ -18,6 +18,8 @@ if config.use_facenet:
 '''
     insight face 模型参数配置，部分重要参数在common.py config中已经指定
 '''
+
+
 class FaceValidation_Config:
 
     def __init__(self):
@@ -26,8 +28,9 @@ class FaceValidation_Config:
         self.ga_model = ''
         self.gpu = config.gpuid
         self.det = 0
-        self.flip =0
+        self.flip = 0
         self.threshold = config.dist_threshold
+
 
 class FaceValidation:
 
@@ -47,7 +50,6 @@ class FaceValidation:
             # args = parser.parse_args()
             args = FaceValidation_Config()
 
-
             self.valmodel = FaceModel(args)
 
         elif config.use_facenet:
@@ -66,6 +68,7 @@ class FaceValidation:
         @modifies self.labelembds
         @effects  根据图片路径读取图片，经过预处理后放入人脸识别模型进行前向过程，将生成的特征向量放入self.labelembds中保存
     '''
+
     def update_POI(self, imgdir_list):
         self.labelembds = []
         if config.use_insightface:
@@ -81,7 +84,6 @@ class FaceValidation:
             self.image_list = self.load_and_align_data(imgdir_list, config.validation_imagesize, config.margin)
             self.labelembds = self.compute_embedings(self.image_list)
 
-
     # face net POI照片数据预处理部分
     '''
         @requires  imgdir_list == direction list of all the POI's images 
@@ -89,6 +91,7 @@ class FaceValidation:
         @modifies  
         @effects   return the processed images
     '''
+
     def load_and_align_data(self, image_paths, image_size, margin):
         minsize = 20  # minimum size of face
         threshold = [0.6, 0.7, 0.7]  # three steps's threshold
@@ -132,6 +135,7 @@ class FaceValidation:
     '''
         @requires raw_img != []
     '''
+
     def process_cutted_image(self, raw_img):
         # process deceted
         aligned = misc.imresize(raw_img, (config.validation_imagesize, config.validation_imagesize), interp='bilinear')
@@ -142,6 +146,7 @@ class FaceValidation:
     '''
         @requires img_processed_picture != None
     '''
+
     def compute_embedings(self, img_processed_picture):
         image_dict = np.stack(img_processed_picture)
         with self.graph.as_default():
@@ -158,6 +163,7 @@ class FaceValidation:
     '''
         Calculate cosine distance between two vectors
     '''
+
     def find_cosine_distance(self, vector1, vector2):
 
         vec1 = vector1.flatten()
@@ -171,6 +177,7 @@ class FaceValidation:
     '''
         Calculate euclidean distance between two vectors
     '''
+
     def cal_distance(self, target, source):
         target = sklearn.preprocessing.normalize(target)
         source = sklearn.preprocessing.normalize(source)
@@ -182,6 +189,7 @@ class FaceValidation:
         @effects  根据视频截图和边界生成人脸截图，进行前向过程后计算与POI标准图片的距离
                   利用阈值判断是否为POI
     '''
+
     def confirm_validity(self, raw_image, boundary, landmark):
 
         if config.use_insightface:

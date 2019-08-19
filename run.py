@@ -9,7 +9,7 @@ from face_detection import FaceDetection
 from face_validation import FaceValidation
 from speaker_validation import SpeakerValidation
 from evaluate import *
-
+import sys
 import cv2
 import subprocess
 import gc
@@ -17,15 +17,6 @@ import numpy as np
 from scipy.io import wavfile
 import time
 import argparse
-
-# log
-fpr = {"entertain": 0, "interview": 0, "song": 0, "act": 0, "live": 0, "recite": 0, "speech": 0, "vlog": 0, "tvs": 0,
-       "movie": 0}
-recall = {"entertain": 0, "interview": 0, "song": 0, "act": 0, "live": 0, "recite": 0, "speech": 0, "vlog": 0, "tvs": 0,
-          "movie": 0}
-num = {"entertain": 0, "interview": 0, "song": 0, "act": 0, "live": 0, "recite": 0, "speech": 0, "vlog": 0, "tvs": 0,
-       "movie": 0}
-names = ["entertain", "interview", "song", "act", "live", "recite", "speech", "vlog", "tvs", "movie"]
 
 if config.debug:
     from audio_player import AudioPlayer
@@ -89,6 +80,7 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
     # 验证视频帧数
     cap = cv2.VideoCapture(video_dir)
     video_fps = cap.get(cv2.CAP_PROP_FPS)
+    video_total_frame = cap.get(7)
     if config.enable_syncnet:
         assert video_fps == 25
     print("Video FPS:", video_fps)
@@ -112,17 +104,19 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
     shot_count = 0
 
     print("\033[94mstart process\033[0m")
+    print("total frames: %s.." % (video_total_frame))
     video_type = video_dir.split("/")[-2]
-    if video_type == "interview" or video_type == "speech":
-        config.starting_confidence = config.easy_starting_confidence
-        config.patient_confidence = config.easy_patient_confidence
-    elif video_type == "entertain":
-        config.starting_confidence = config.hard_starting_confidence
-        config.patient_confidence = config.hard_patient_confidence
-    else:
-        config.starting_confidence = config.normal_starting_confidence
-        config.patient_confidence = config.normal_patient_confidence
-    print("\033[94mthreshold:  %s & %s\033[0m" % (str(config.starting_confidence), str(config.patient_confidence)))
+    if config.enable_multi_conf:
+        if video_type == "interview" or video_type == "speech":
+            config.starting_confidence = config.easy_starting_confidence
+            config.patient_confidence = config.easy_patient_confidence
+        elif "entertain" in video_type or "tv" in video_type:
+            config.starting_confidence = config.hard_starting_confidence
+            config.patient_confidence = config.hard_patient_confidence
+        else:
+            config.starting_confidence = config.normal_starting_confidence
+            config.patient_confidence = config.normal_patient_confidence
+    # print("\033[94mthreshold:  %s & %s\033[0m" % (str(config.starting_confidence), str(config.patient_confidence)))
     start_time = time.time()
     while True:
         # resize
@@ -166,12 +160,12 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
                         wavfile.write('temp/segment.wav', 16000, part_audio)
                         player = AudioPlayer('temp/segment.wav')
 
-                    # 分别使用原音轨和空音轨调用 syncnet，对于空音轨中置信度高于3 的部分，将原音轨中计算出的相应置信度置零
+                    # 分别使用原音轨和空音轨调用 syncnet，对于空音轨中置信度高于 的部分，将原音轨中计算出的相应置信度置零
                     offset, confidence, dists_npy = speaker_validation.evaluate(video_fps, tracker.sync_seq, part_audio)
                     silent_audio = np.zeros(part_audio.shape, dtype=audio.dtype)
                     __, conf_silent, __ = speaker_validation.evaluate(video_fps, tracker.sync_seq, silent_audio)
                     # print(conf_silent)
-                    confidence[conf_silent > 2.8] = 0
+                    confidence[conf_silent > config.conf_silent_threshold] = 0
                     # confidence = conf_silent
 
                     # debug 模式下输出额外信息
@@ -308,7 +302,7 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
                     __, conf_silent, __ = speaker_validation.evaluate(video_fps, tracker.sync_seq[:-config.patience],
                                                                       silent_audio)
                     # print(conf_silent)
-                    confidence[conf_silent > 2.8] = 0
+                    confidence[conf_silent > config.conf_silent_threshold] = 0
                     # confidence = conf_silent
 
                     if config.debug:
@@ -358,9 +352,11 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
                 new_tracker_list.append(tracker)
         tracker_list = new_tracker_list
 
+        # 进度展示
         if shot_count % 1000 == 0 and shot_count != 0:
             print('Shot {:d}, FPS {:.2f} '.format(shot_count, 1000 / (time.time() - start_time)), end='\n')
             start_time = time.time()
+
         if config.showimg:
             cv2.imshow('Video', image)
         if config.write_video:
@@ -373,18 +369,13 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
 
     predict_results.close()
 
-    dataclean(output_dir)
+    if config.enable_dataclean:
+        dataclean(output_dir, video_total_frame)
 
     # evaluate
     if config.enable_evaluation:
         index = video_dir.rfind('.')
-        FPR, Recall = evaluate_result(video_dir[:index] + ".csv", output_dir)
-        try:
-            fpr[video_type] += FPR
-            recall[video_type] += Recall
-            num[video_type] += 1
-        except:
-            print("\033[91man uncommen type: %s\033[0m" % (video_type))
+        FPR, Recall = evaluate_result(video_dir[:index] + ".csv", output_dir, video_total_frame)
 
 
 if __name__ == '__main__':
@@ -409,7 +400,9 @@ if __name__ == '__main__':
         os.makedirs(config.log_dir)
     if not os.path.exists(config.output_dir):
         os.makedirs(config.output_dir)
-
+    log_dir = os.path.join(config.log_dir, "evaluate.txt")
+    with open(log_dir, "w") as f:
+        print("create evaluate.txt")
     # 根据文件路径结构获取视频以及POI照片，开始批处理
     POIS = os.listdir(config.video_base_dir)
     # 跳跃至初始POI，用于越过处理完成的POI
@@ -453,9 +446,3 @@ if __name__ == '__main__':
                     gc.collect()
 
     print("\033[94mcomplete\033[0m")
-    for name in names:
-        if num[name] == 0:
-            continue
-        FPR = fpr[name] / num[name]
-        Recall = recall[name] / num[name]
-        print("\033[92m%s has number: %s\tFPR: %s\tRecall: %s\033[0m" % (name, num[name], FPR, Recall))

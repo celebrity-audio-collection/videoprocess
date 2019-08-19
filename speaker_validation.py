@@ -51,6 +51,8 @@ class SpeakerValidation:
                 while index < confidence.shape[0] and confidence[index] >= config.patient_confidence:
                     index += 1
                 processed = index
+                if start_shot + index - slice_start < 5:
+                    continue
                 slice_end = start_shot + index + 6
                 candidates.append((slice_start, slice_end))
                 slice_length = slice_end - slice_start
