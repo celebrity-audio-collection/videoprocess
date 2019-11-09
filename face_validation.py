@@ -12,8 +12,8 @@ import cv2
 
 if config.use_facenet:
     import tensorflow as tf
-    import facenet_code.align.detect_face
-    from facenet_code import facenet
+    import FaceNet.align.detect_face
+    from FaceNet import facenet
 
 '''
     insight face 模型参数配置，部分重要参数在common.py config中已经指定
@@ -103,15 +103,15 @@ class FaceValidation:
             # sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, log_device_placement=False))
             sess = tf.Session(config=tf.ConfigProto(log_device_placement=False))
             with sess.as_default():
-                pnet, rnet, onet = facenet_code.align.detect_face.create_mtcnn(sess, None)
+                pnet, rnet, onet = FaceNet.align.detect_face.create_mtcnn(sess, None)
 
         tmp_image_paths = copy.copy(image_paths)
         img_list = []
         for image in tmp_image_paths:
             img = misc.imread(os.path.expanduser(image), mode='RGB')
             img_size = np.asarray(img.shape)[0:2]
-            bounding_boxes, _ = facenet_code.align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold,
-                                                                           factor)
+            bounding_boxes, _ = FaceNet.align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold,
+                                                                      factor)
             if len(bounding_boxes) < 1:
                 image_paths.remove(image)
                 print("can't detect face, remove ", image)

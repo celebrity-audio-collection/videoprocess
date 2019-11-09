@@ -160,7 +160,7 @@ def process_single_video(video_dir, output_dir, face_detection_model, face_valid
                         wavfile.write('temp/segment.wav', 16000, part_audio)
                         player = AudioPlayer('temp/segment.wav')
 
-                    # 分别使用原音轨和空音轨调用 syncnet，对于空音轨中置信度高于 的部分，将原音轨中计算出的相应置信度置零
+                    # 分别使用原音轨和空音轨调用 SyncNet，对于空音轨中置信度高于 的部分，将原音轨中计算出的相应置信度置零
                     offset, confidence, dists_npy = speaker_validation.evaluate(video_fps, tracker.sync_seq, part_audio)
                     silent_audio = np.zeros(part_audio.shape, dtype=audio.dtype)
                     __, conf_silent, __ = speaker_validation.evaluate(video_fps, tracker.sync_seq, silent_audio)

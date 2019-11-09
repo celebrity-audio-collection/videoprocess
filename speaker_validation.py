@@ -1,9 +1,9 @@
 from common import config
-from syncnet import SyncNetInstance
+from SyncNet import SyncNetInstance
 import numpy as np
 
 '''
-    说话人检测，采用 syncnet 进行唇动与语音对齐
+    说话人检测，采用 SyncNet 进行唇动与语音对齐
 '''
 class SpeakerValidation:
 
