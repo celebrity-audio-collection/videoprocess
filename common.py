@@ -13,9 +13,9 @@ class Config:
     # {video_base_dir}/名人/类别/该类别视频
     # {image_base_dir}/名人/该名人所有照片
     #
-    video_base_dir = "/work4/zhangpengyuan/videos-finecut"
-    image_base_dir = "/work4/chengsitong/cslt/zzy/poi"
-    wav_output_dir = "/work4/zhangpengyuan/wav_results_eps1.5"
+    video_base_dir = "C:/Users/haoli/Desktop/videos"
+    image_base_dir = "./images"
+    wav_output_dir = "./wav_results_eps1.5"
     # video_num = 1
     # video_dir = [os.path.join(os.getcwd(), 'videos', POI, file) for file in
     #              os.listdir(os.path.join(os.getcwd(), 'videos', POI))][video_num - 1]
