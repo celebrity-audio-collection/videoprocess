@@ -6,8 +6,8 @@ import numpy as np
 import os
 from common import config
 import argparse
-from RetinaFaceModel.insightface.deploy.face_model import FaceModel
-from RetinaFaceModel.insightface.src.common.face_preprocess import preprocess
+from RetinaFace.insightface.deploy.face_model import FaceModel
+from RetinaFace.insightface.src.common.face_preprocess import preprocess
 import cv2
 
 if config.use_facenet:

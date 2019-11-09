@@ -2,9 +2,9 @@ import numpy as np
 from common import config
 import platform
 if platform.platform().find('Windows') >= 0:
-    from RetinaFaceModel.insightface.RetinaFace.retinaface import RetinaFace
+    from RetinaFace.insightface.RetinaFace.retinaface import RetinaFace
 elif platform.platform().find('Linux') >= 0:
-    from RetinaFaceModel.insightface.RetinaFace_linux.retinaface import RetinaFace
+    from RetinaFace.insightface.RetinaFace_linux.retinaface import RetinaFace
 
 
 class FaceDetection:

@@ -15,7 +15,7 @@ import time
 import dlib
 import cv2
 import os
-from RetinaFaceModel.insightface.RetinaFace.retinaface import RetinaFace
+from RetinaFace.insightface.RetinaFace.retinaface import RetinaFace
 
 
 ap = argparse.ArgumentParser()
